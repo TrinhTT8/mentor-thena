@@ -1,1 +1,8 @@
-/* Odyssey theme styles go here (polish phase). */
+/* Temporary plain styles. B6 replaces these with the pixel design system. */
+.student-page { max-width: 800px; margin: 0 auto; padding: 16px; font-family: system-ui, sans-serif; display: grid; gap: 12px; }
+.run-button { justify-self: start; padding: 10px 20px; font-size: 16px; cursor: pointer; }
+.run-button:disabled { cursor: wait; opacity: 0.6; }
+.output-box { min-height: 96px; margin: 0; padding: 12px; border: 2px solid #888; white-space: pre-wrap; font-family: ui-monospace, Consolas, monospace; font-size: 15px; }
+.output-empty { color: #666; }
+.output-lead { display: block; font-weight: 700; margin-bottom: 6px; }
+.output-error { color: #b42318; }
