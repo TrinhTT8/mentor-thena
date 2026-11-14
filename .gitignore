@@ -1,5 +1,8 @@
 # Private planning doc
+handoff-person-a.md
 ARCHITECTURE.md
+CLAUDE.md
+CLAUDE.local.md
 
 # Secrets
 .env
@@ -21,3 +24,5 @@ dist/
 .idea/
 .DS_Store
 Thumbs.db
+
+
