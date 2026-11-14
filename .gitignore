@@ -1,5 +1,6 @@
 # Private planning doc
 ARCHITECTURE.md
+CLAUDE.md
 
 # Secrets
 .env
@@ -21,3 +22,4 @@ dist/
 .idea/
 .DS_Store
 Thumbs.db
+
