@@ -7,7 +7,7 @@ export default function HealthCheck() {
 
   useEffect(() => {
     getHealth()
-      .then((data) => setText(`API connected (demo mode: ${data.demo_mode})`))
+      .then(() => setText('API connected'))
       .catch(() => setText('API not reachable. Is Flask running?'))
   }, [])
 

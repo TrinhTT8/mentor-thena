@@ -11,12 +11,8 @@ MONGODB_URI = os.getenv("MONGODB_URI", "")
 MONGODB_DB = os.getenv("MONGODB_DB", "mentorthena")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 
-# --- Mode ---
-# DEMO_MODE=1 uses short thresholds so judges see a ship turn yellow in seconds.
-DEMO_MODE = os.getenv("DEMO_MODE", "1") == "1"
-
 # --- Argus stuck rules ---
-_NORMAL_RULES = {
+STUCK_RULES = {
     "idle_seconds": 60,          # no key press or cursor move
     "churn_window_seconds": 30,  # window for the type-and-delete rule
     "churn_delete_ratio": 0.7,   # deleted keys / typed keys
@@ -25,16 +21,6 @@ _NORMAL_RULES = {
     "wrong_output_runs": 3,      # runs fine but wrong output N times
     "hint_cooldown_seconds": 45, # min time between two hints for one student
 }
-
-_DEMO_RULES = {
-    **_NORMAL_RULES,
-    "idle_seconds": 15,
-    "same_error_runs": 2,
-    "wrong_output_runs": 2,
-    "hint_cooldown_seconds": 10,
-}
-
-STUCK_RULES = _DEMO_RULES if DEMO_MODE else _NORMAL_RULES
 
 # Frontend sends a heartbeat this often (seconds).
 HEARTBEAT_SECONDS = 10
