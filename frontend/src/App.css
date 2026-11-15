@@ -49,30 +49,30 @@ body {
   font: var(--text-label);
   color: var(--on-accent);
   background: var(--face);
-  border: var(--border-soft) solid var(--pixel-edge);
+  border: var(--border-thin) solid var(--pixel-edge);
   border-radius: var(--radius-control);
-  padding: var(--space-3) var(--space-4) calc(var(--space-3) + var(--space-2));
+  padding: var(--space-2) var(--space-4) calc(var(--space-2) + var(--space-1));
   box-shadow:
-    inset 0 var(--border-pixel) 0 var(--stone-light),
-    inset 0 calc(-2 * var(--border-pixel)) 0 var(--stone-dark),
-    var(--shadow-pixel);
+    inset 0 var(--border-thin) 0 var(--stone-light),
+    inset 0 calc(-1 * var(--border-pixel)) 0 var(--stone-dark),
+    3px 3px 0 var(--pixel-edge);
   cursor: pointer;
   transition: transform 80ms steps(1), box-shadow 80ms steps(1);
 }
 
 .stone-button:hover:not(:disabled) {
-  transform: translate(-2px, -2px);
+  transform: translate(-1px, -1px);
   box-shadow:
-    inset 0 var(--border-pixel) 0 var(--stone-light),
-    inset 0 calc(-2 * var(--border-pixel)) 0 var(--stone-dark),
-    var(--shadow-pixel-lg);
+    inset 0 var(--border-thin) 0 var(--stone-light),
+    inset 0 calc(-1 * var(--border-pixel)) 0 var(--stone-dark),
+    4px 4px 0 var(--pixel-edge);
 }
 
 .stone-button:active:not(:disabled) {
-  transform: translate(0, var(--border-pixel));
+  transform: translate(2px, 2px);
   box-shadow:
-    inset 0 var(--border-pixel) 0 var(--stone-light),
-    inset 0 calc(-1 * var(--border-pixel)) 0 var(--stone-dark),
+    inset 0 var(--border-thin) 0 var(--stone-light),
+    inset 0 calc(-1 * var(--border-thin)) 0 var(--stone-dark),
     var(--shadow-none);
 }
 
@@ -766,8 +766,8 @@ span.ide-tab { cursor: default; }
   font: var(--text-label);
   color: var(--ink);
   background: var(--panel);
-  border: var(--border-soft) solid var(--border);
-  box-shadow: var(--shadow-pixel);
+  border: var(--border-thin) solid var(--border);
+  box-shadow: 3px 3px 0 var(--border);
   cursor: pointer;
 }
 
@@ -806,7 +806,7 @@ span.ide-tab { cursor: default; }
 .home-main {
   flex: 1;
   width: 100%;
-  padding: var(--space-6) clamp(var(--space-3), 4vw, var(--space-6)) var(--space-4);
+  padding: var(--space-3) clamp(var(--space-3), 4vw, var(--space-6)) var(--space-4);
   display: grid;
   gap: var(--space-5);
   align-content: start;
@@ -1057,6 +1057,9 @@ span.ide-tab { cursor: default; }
 
 .home-quest .tag-label { color: var(--ink-dim); }
 
+/* The quest card and log in card sit in a wrapper that holds the peeking owl */
+.peek-wrap { position: relative; display: grid; }
+
 /* Athena peeks over the top edge of the card */
 .peek-owl {
   position: absolute;
@@ -1140,35 +1143,244 @@ span.ide-tab { cursor: default; }
   .home-top-right .room-chip { display: none; }
 }
 
-/* ---------- Start page (sailor code) ---------- */
-.login-main {
-  flex: 1;
-  display: grid;
-  place-items: center;
-  padding: var(--space-6) var(--space-3);
+/* ---------- Log in page: a night sea ---------- */
+.login-page {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: var(--insight-ink);
+  background:
+    radial-gradient(circle at 18% 30%, var(--insight-ink) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 26% 12%, var(--gold) 0 1.5px, transparent 2px),
+    radial-gradient(circle at 44% 26%, var(--insight-ink) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 52% 8%, var(--insight-ink) 0 1.5px, transparent 2px),
+    radial-gradient(circle at 63% 34%, var(--insight-ink) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 74% 16%, var(--gold) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 92% 28%, var(--insight-ink) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 8% 52%, var(--insight-ink) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 34% 48%, var(--insight-ink) 0 1px, transparent 1.5px),
+    linear-gradient(to bottom, var(--sea-bottom), var(--insight-bg));
 }
 
-.login-card {
-  width: min(400px, 100%);
+.login-sky { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+
+.login-moon { position: absolute; top: 9%; left: 6%; width: 64px; height: 64px; }
+
+.login-cloud {
+  position: absolute;
+  top: 19%;
+  left: 24%;
+  width: 80px;
+  height: 24px;
+  animation: cloud-drift 40s linear infinite alternate;
+}
+
+@keyframes cloud-drift {
+  from { transform: translateX(0); }
+  to { transform: translateX(120px); }
+}
+
+.login-twinkle { position: absolute; animation: twinkle 1.6s ease-in-out infinite alternate; }
+
+.login-main {
+  flex: 1;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-6) clamp(var(--space-3), 4vw, var(--space-6)) var(--space-5);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 400px);
+  align-items: center;
+  gap: var(--space-6);
+}
+
+@media (max-width: 800px) {
+  .login-main { grid-template-columns: minmax(0, 1fr); gap: var(--space-5); }
+}
+
+/* Left: logo, wordmark, tagline */
+.login-brand {
   display: grid;
   justify-items: center;
   gap: var(--space-3);
-  padding: var(--space-5);
-  background: var(--parchment);
-  color: var(--on-accent);
-  border: var(--border-soft) solid var(--wood-frame);
-  box-shadow: 6px 6px 0 var(--wood-frame);
   text-align: center;
+}
+
+.login-mark { width: clamp(96px, 12vw, 132px); height: auto; }
+
+.login-word {
+  margin: 0;
+  font: var(--text-display);
+  font-size: clamp(48px, 7vw, 80px);
+  line-height: 1;
+  color: var(--insight-ink);
+}
+
+.login-word span { color: var(--gold); }
+
+.login-tagline {
+  max-width: 360px;
+  margin: 0;
+  font: var(--text-body-lg);
+  font-size: 20px;
+  line-height: 30px;
+}
+
+/* Right: the card */
+.login-card {
+  position: relative;
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  color: var(--on-accent);
+  background: var(--parchment);
+  --frame-ink: var(--wood-frame);
+  --card-shadow: var(--pixel-edge);
+}
+
+.peek-wrap .peek-owl { z-index: 6; }
+
+.role-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin-bottom: var(--space-2);
+  border: var(--border-thin) solid var(--border);
+}
+
+.role-tab {
+  display: grid;
+  gap: 2px;
+  padding: var(--space-2);
+  font: inherit;
+  color: var(--ink);
+  background: var(--panel);
+  border: none;
+  cursor: pointer;
+}
+
+.role-tab + .role-tab { border-left: var(--border-thin) solid var(--border); }
+
+.role-tab.is-active { color: var(--gold); background: var(--sea-bottom); }
+
+.role-tab-title { font: var(--text-tag); }
+.role-tab-sub { font: var(--text-small); font-size: 12px; color: inherit; opacity: 0.8; }
+
+.login-label {
+  margin-top: var(--space-2);
+  font: var(--text-small);
+  color: var(--ink);
 }
 
 .login-input {
   width: 100%;
   padding: var(--space-2) var(--space-3);
-  font: var(--text-title);
-  text-align: center;
+  font: var(--text-code);
+  letter-spacing: 1px;
   color: var(--ink);
   background: var(--panel);
-  border: var(--border-soft) solid var(--border);
+  border: var(--border-thin) solid var(--border);
+}
+
+.login-input.is-reading { font: var(--text-body); letter-spacing: 0; }
+.login-input::placeholder { color: var(--ink-dim); opacity: 0.7; }
+
+/* Secret pictures: six small tiles; the chosen one turns gold */
+.picture-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.picture-choice {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  padding: var(--space-1);
+  background: var(--panel);
+  border: var(--border-thin) solid var(--wood-light);
+  cursor: pointer;
+}
+
+.picture-choice img { width: 28px; height: 28px; }
+.picture-choice:hover { border-color: var(--border); }
+.picture-choice.is-picked { background: var(--gold); border-color: var(--pixel-edge); }
+
+.login-message {
+  min-height: 20px;
+  margin: 0;
+  font: var(--text-small);
+  color: var(--alert-edge);
+}
+
+.login-submit { width: 100%; }
+
+.login-help {
+  margin: 0;
+  font: var(--text-small);
+  font-size: 13px;
+  text-align: center;
+  color: var(--ink-dim);
+}
+
+/* The sea along the bottom */
+.login-sea {
+  position: relative;
+  height: clamp(150px, 24vh, 220px);
+  background: linear-gradient(to bottom, var(--sea-top), var(--sea-bottom));
+  pointer-events: none;
+}
+
+.login-ithaca {
+  position: absolute;
+  right: 6%;
+  bottom: 52%;
+  display: flex;
+  align-items: flex-end;
+}
+
+.login-lighthouse {
+  position: relative;
+  z-index: 1;
+  width: 32px;
+  height: 88px;
+  margin-right: -44px;
+  margin-bottom: 26px;
+}
+
+/* A soft light beam from the lighthouse lamp, sweeping left and right */
+.lighthouse-beam {
+  position: absolute;
+  left: -150px;
+  bottom: 96px;
+  width: 170px;
+  height: 40px;
+  background: linear-gradient(to left, color-mix(in srgb, var(--gold) 45%, transparent), transparent);
+  clip-path: polygon(100% 45%, 0 0, 0 100%, 100% 55%);
+  transform-origin: 100% 50%;
+  animation: beam-sweep 6s ease-in-out infinite alternate;
+}
+
+@keyframes beam-sweep {
+  from { transform: rotate(-8deg); }
+  to { transform: rotate(8deg); }
+}
+
+/* Odysseus sails gently back and forth near the bottom */
+.login-hero {
+  position: absolute;
+  left: 40%;
+  bottom: 4%;
+  width: 130px;
+  height: 110px;
+  animation: hero-sail 14s ease-in-out infinite alternate, ship-bob 2.6s ease-in-out infinite;
+}
+
+@keyframes hero-sail {
+  from { left: 34%; }
+  to { left: 48%; }
 }
 
 /* ---------- Teacher dashboard ---------- */
@@ -1617,8 +1829,6 @@ span.ide-tab { cursor: default; }
 
 .class-card.is-selected {
   background: var(--panel);
-  border-color: var(--border);
-  box-shadow: var(--shadow-pixel);
 }
 
 .class-card-top {
@@ -1949,3 +2159,102 @@ span.ide-tab { cursor: default; }
     transition: none !important;
   }
 }
+
+/* One "pixel" of the card frame, matched to WHOLE screen pixels at common Windows and
+   Mac zoom levels. A frame pixel that lands halfway through a screen pixel gets blended
+   into a grey-silver line, so at 125% it is 3 screen pixels (2.4px), not 2.5. */
+:root { --frame-u: 2px; }
+@media (resolution: 1.25dppx) { :root { --frame-u: 2.4px; } }   /* 3 screen pixels */
+@media (resolution: 1.75dppx) { :root { --frame-u: calc(4px / 1.75); } }  /* 4 screen pixels */
+@media (resolution: 2.25dppx) { :root { --frame-u: calc(4px / 2.25); } }  /* 4 screen pixels */
+@media (resolution: 2.5dppx) { :root { --frame-u: 2.4px; } }    /* 6 screen pixels */
+
+/* ---------- Pixel box frame: crisp stepped corners ----------
+   Built only from box shadows (plain rectangles), which the browser lines up exactly with
+   screen pixels, so there is no soft or silver edge at any zoom (125%, 150%...).
+   The card's fill is one of those shadows too, so fill and frame always line up.
+   Around each card, from the inside out:
+     1. a strip one pixel wide in the card's own color (--card-bg), corners left empty
+     2. the dark outline one pixel further out, corners left empty
+     3. one dark pixel in each corner, which makes the stair step
+   --u is one pixel of the frame. --frame-ink changes the outline color on a card. */
+.panel,
+.quest-banner,
+.ide,
+.athena-panel,
+.hint-card,
+.my-ship,
+.voyage-map,
+.home-quest,
+.logbook,
+.logbook-stat,
+.map-label,
+.help-queue,
+.queue-card,
+.tiresias,
+.whole-class,
+.class-card,
+.class-banner,
+.th-voyage,
+.th-library,
+.voyage-item,
+.night-scene,
+.login-card,
+.teacher-note,
+.profile-card,
+.celebration {
+  --u: var(--frame-u);
+  --ink: var(--frame-ink, var(--pixel-edge));
+  border: none;
+  clip-path: none;
+  box-shadow:
+    0 calc(-1 * var(--u)) 0 0 var(--card-bg),
+    0 var(--u) 0 0 var(--card-bg),
+    calc(-1 * var(--u)) 0 0 0 var(--card-bg),
+    var(--u) 0 0 0 var(--card-bg),
+    0 calc(-2 * var(--u)) 0 0 var(--ink),
+    0 calc(2 * var(--u)) 0 0 var(--ink),
+    calc(-2 * var(--u)) 0 0 0 var(--ink),
+    calc(2 * var(--u)) 0 0 0 var(--ink),
+    calc(-1 * var(--u)) calc(-1 * var(--u)) 0 0 var(--ink),
+    var(--u) calc(-1 * var(--u)) 0 0 var(--ink),
+    calc(-1 * var(--u)) var(--u) 0 0 var(--ink),
+    var(--u) var(--u) 0 0 var(--ink),
+    inset 0 0 0 100vmax var(--card-fill, var(--card-bg));
+}
+
+/* The card's fill is painted by the same shadows as its frame (the last, inset layer),
+   so the browser rounds both to the same screen pixels: no grey seam at 125% or 150%.
+   Cards with a picture background (stars, the night sea) keep their own background. */
+.class-banner,
+.night-scene { --card-fill: transparent; }
+
+/* Each card's own color, for the inner strip of its frame */
+.panel, .athena-panel, .my-ship, .logbook, .whole-class, .th-library, .voyage-item,
+.queue-card { --card-bg: var(--panel); }
+.quest-banner, .home-quest, .logbook-stat, .map-label, .help-queue, .class-card,
+.th-voyage, .login-card, .profile-card, .celebration { --card-bg: var(--parchment); }
+.ide { --card-bg: var(--editor-bar); }
+.voyage-map, .night-scene { --card-bg: var(--sea-bottom); }
+.tiresias, .class-banner { --card-bg: var(--insight-bg); }
+.teacher-note { --card-bg: var(--stone-light); }
+.hint-card.is-hint { --card-bg: var(--amber); }
+.hint-card.is-thinking, .hint-card.is-idle { --card-bg: var(--sail); }
+.hint-card.is-done { --card-bg: var(--status-green); }
+.queue-card.is-red { --card-bg: var(--alert-tint); }
+.class-card.is-selected { --card-bg: var(--panel); }
+.map-stop.is-locked .map-label { --card-bg: var(--stone); }
+
+/* Cards that keep a meaning in their outline color */
+.queue-card.is-red { --frame-ink: var(--alert-edge); }
+.class-card.is-selected { --frame-ink: var(--border); background: var(--panel); }
+.class-card:hover { --frame-ink: var(--wood-frame); }
+.celebration { --frame-ink: var(--gold); }
+
+/* Scrolling lists: room so the outlines and shadows of the cards inside aren't cut off */
+.queue-list,
+.voyage-list { padding: 9px 17px 17px 9px; }
+.queue-list,
+.voyage-list,
+.class-list { gap: var(--space-3); }
+.class-list { padding: 9px 17px 17px 9px; }

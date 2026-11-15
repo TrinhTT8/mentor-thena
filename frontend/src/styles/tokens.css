@@ -27,6 +27,7 @@
   --ithaca: #6cb4ff;        /* at Ithaca: sky blue, so it never looks like "getting hints" yellow */
   --focus-ring: var(--teal);
   --heading: var(--gold);   /* panel titles and the logo */
+  --card-shadow: var(--pixel-edge); /* the stepped shadow under every card */
   --logo-accent: var(--gold); /* "Thena" in the logo: gold on dark */
   --frame: var(--border);   /* soft card frames */
   --shadow-color: var(--pixel-edge); /* the offset block shadow under cards */
@@ -73,6 +74,7 @@
   --logo-accent: #8b5a2b;   /* "Thena" in the logo: wood brown on cream */
   --focus-ring: #0e6e6c;    /* a darker teal that shows on cream */
   --frame: #6a7bc4;         /* soft periwinkle card frames (the night border color) */
+  --card-shadow: #d6c8a0;   /* the stepped shadow under every card: a darker parchment, like the box picture */
   --shadow-color: #1e2a5a;  /* hard navy block shadows, like the mockup */
   --page-pattern: #f1e6c9;
 

@@ -195,9 +195,12 @@ function QuestCard({ id, lesson, index, total }) {
   const locked = lesson.status === 'locked'
   const done = lesson.status === 'completed'
 
+  // Athena sits just OUTSIDE the card (in the wrapper), so the card's stepped
+  // corners don't cut her off while she peeks over the top edge.
   return (
+    <div className="peek-wrap">
+    <img src="/pixel/athena-owl.svg" alt="" width="56" height="56" className="peek-owl pixel-art" />
     <section className="home-quest" aria-labelledby="home-quest-title">
-      <img src="/pixel/athena-owl.svg" alt="" width="56" height="56" className="peek-owl pixel-art" />
       <span className="tag-label">Quest {index + 1} of {total}</span>
       <h2 id="home-quest-title" className="quest-title">{lesson.title}</h2>
       {lesson.skill && <span className="skill-chip">Skill: {lesson.skill}</span>}
@@ -216,6 +219,7 @@ function QuestCard({ id, lesson, index, total }) {
         </Link>
       )}
     </section>
+    </div>
   )
 }
 
