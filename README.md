@@ -35,3 +35,7 @@ npm run dev
 ```
 
 Open the student page at `/student/s1` and the teacher Sea Map at `/teacher/c1`.
+
+```
+[PLACEHOLDER - FOLDER NAME DEFINITION]
+```
