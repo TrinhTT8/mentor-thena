@@ -8,7 +8,7 @@ import { DEMO_CLASSES, DEMO_VOYAGES, QUEST_LIBRARY, SKILLS } from '../teacherDem
 // The teacher's home page: their classes on the left, the chosen class's banner,
 // today's voyage (the quests students sail, in order) and the quest library.
 // Class lists, the library and assigning are DEMO data for now (see teacherDemo.js);
-// the live counts for class c1 are real.
+// the live counts come from each class's Sea Map.
 const STORAGE_KEY = 'mentorthena.teacher.voyages'
 const POLL_MS = 5000
 
@@ -37,21 +37,24 @@ export default function TeacherHome() {
   const [classId, setClassId] = useState(DEMO_CLASSES[0].id)
   const [voyages, setVoyages] = useState(loadVoyages)
   const [skill, setSkill] = useState('All')
-  const [live, setLive] = useState({}) // live counts for real classes: { c1: { red, yellow } }
+  const [live, setLive] = useState({}) // live counts per class: { c1: { red, yellow, students } }
   const [note, setNote] = useState('')
 
-  // Live "needs you / getting hints" counts for the real class.
+  // Live "needs you / getting hints" counts for every class (a class the server
+  // doesn't know yet just shows no chips).
   useEffect(() => {
     let cancelled = false
     async function refresh() {
-      try {
-        const map = await getSeamap('c1')
-        if (cancelled) return
-        const count = (status) => map.students.filter((s) => s.status === status).length
-        setLive({ c1: { red: count('red'), yellow: count('yellow'), students: map.students.length } })
-      } catch {
-        // server down: the class card just shows no live chips
-      }
+      const results = await Promise.allSettled(DEMO_CLASSES.map((c) => getSeamap(c.id)))
+      if (cancelled) return
+      const next = {}
+      results.forEach((result, i) => {
+        if (result.status !== 'fulfilled') return
+        const ships = result.value.students
+        const count = (status) => ships.filter((s) => s.status === status).length
+        next[DEMO_CLASSES[i].id] = { red: count('red'), yellow: count('yellow'), students: ships.length }
+      })
+      setLive(next)
     }
     const first = setTimeout(refresh, 0)
     const timer = setInterval(refresh, POLL_MS)
@@ -108,7 +111,6 @@ export default function TeacherHome() {
                   >
                     <span className="class-card-top">
                       <span className="class-card-name">{c.name}</span>
-                      {c.live && <span className="live-chip">Live now</span>}
                     </span>
                     <span className="class-card-meta">{counts?.students ?? c.students} students · {c.language}</span>
                     {counts && (counts.red > 0 || counts.yellow > 0) && (
@@ -148,13 +150,7 @@ export default function TeacherHome() {
               <span className="class-code-label">Class code</span>
               <span className="class-code-value">{current.code}</span>
             </div>
-            {current.live ? (
-              <Link to={`/teacher/${current.id}`} className="stone-button is-gold">Open Sea Map</Link>
-            ) : (
-              <button type="button" className="stone-button is-gold" disabled title="Only the live class has a Sea Map in this demo">
-                Open Sea Map
-              </button>
-            )}
+            <Link to={`/teacher/${encodeURIComponent(current.id)}`} className="stone-button is-gold">Open Sea Map</Link>
           </div>
         </section>
 

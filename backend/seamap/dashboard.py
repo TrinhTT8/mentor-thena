@@ -41,7 +41,7 @@ def to_iso(value):
 
 
 def get_task(student_id):
-    """Return the student's current task.
+    """Return the student's current task and the student's own first name.
 
     Never includes expected_output, solution, or steps (server only).
     """
@@ -61,6 +61,8 @@ def get_task(student_id):
         "task_id": task["_id"],
         "title": task.get("title"),
         "instructions": task.get("instructions"),
+        # The student's OWN first name, for "Ahoy, Maya!". Never other students' names.
+        "student_name": student.get("name"),
     }
 
     # The teacher's example is optional: only send it when the task has one.

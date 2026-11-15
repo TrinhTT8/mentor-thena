@@ -73,10 +73,16 @@ export default function TeacherPage() {
       setSeamap(map.value)
       setUpdatedAt(Date.now())
       setOffline(false)
+    } else if (map.reason?.status === 404) {
+      // The server doesn't have this class yet: show an empty Sea Map, not an error.
+      setSeamap({ class_id: classId, students: [], stats: { avg_seconds_stuck: 0, siren_blocks: 0 } })
+      setUpdatedAt(Date.now())
+      setOffline(false)
     } else {
       setOffline(true)
     }
     if (tip.status === 'fulfilled') setInsight(tip.value)
+    else if (tip.reason?.status === 404) setInsight({ tip: '', counts: [], updated_at: null })
   }, [classId])
 
   // Load now, then every 3 s. A 1-second clock keeps "updated 3s ago" and stuck times fresh.

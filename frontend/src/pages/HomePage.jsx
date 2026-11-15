@@ -232,18 +232,18 @@ function Logbook({ stars, visited, total, streak }) {
         <div className="logbook-stat">
           <img src="/pixel/star.svg" alt="" width="28" height="28" className="pixel-art" />
           <strong>{stars}</strong>
-          <span>{stars === 1 ? 'star' : 'stars'}</span>
+          <span className="sr-only">{stars === 1 ? 'star' : 'stars'}</span>
         </div>
         <div className="logbook-stat">
           <img src="/pixel/island.svg" alt="" width="40" height="26" className="pixel-art" />
           <strong>{visited}/{total}</strong>
-          <span>islands</span>
+          <span className="sr-only">islands visited</span>
         </div>
         {streak != null && (
           <div className="logbook-stat">
             <img src="/pixel/sparkle.svg" alt="" width="24" height="24" className="pixel-art" />
             <strong>{streak}</strong>
-            <span>day streak</span>
+            <span className="sr-only">day streak</span>
           </div>
         )}
       </div>

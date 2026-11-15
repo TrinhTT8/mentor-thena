@@ -2,7 +2,11 @@
 
 async function getJson(path) {
   const res = await fetch(path)
-  if (!res.ok) throw new Error(`${path} failed: ${res.status}`)
+  if (!res.ok) {
+    const error = new Error(`${path} failed: ${res.status}`)
+    error.status = res.status // e.g. 404 = not found, so pages can tell "missing" from "offline"
+    throw error
+  }
   return res.json()
 }
 
