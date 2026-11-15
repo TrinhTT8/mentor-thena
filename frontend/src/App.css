@@ -1,16 +1,530 @@
-/* Temporary plain styles. B6 replaces these with the pixel design system. */
-.student-page { max-width: 800px; margin: 0 auto; padding: 16px; font-family: system-ui, sans-serif; display: grid; gap: 12px; }
-.run-button { justify-self: start; padding: 10px 20px; font-size: 16px; cursor: pointer; }
-.run-button:disabled { cursor: wait; opacity: 0.6; }
-.output-box { min-height: 96px; margin: 0; padding: 12px; border: 2px solid #888; white-space: pre-wrap; font-family: ui-monospace, Consolas, monospace; font-size: 15px; }
-.output-empty { color: #666; }
-.output-lead { display: block; font-weight: 700; margin-bottom: 6px; }
-.output-error { color: #b42318; }
-.task-card h1 { margin: 0 0 6px; font-size: 22px; }
-.task-card p { margin: 0; }
-.hint-box { padding: 12px; border: 2px solid #7a5a2e; background: #fbf3e2; }
-.hint-thinking { font-style: italic; color: #666; }
-.hint-lead { display: block; font-weight: 700; margin-bottom: 4px; }
-.hint-text { margin: 0; }
-.debug-line { margin: 0; font-family: ui-monospace, Consolas, monospace; font-size: 12px; color: #666; }
-.ithaca-box { padding: 12px; border: 2px solid #2e7a3c; background: #e6f6e9; font-weight: 700; }
+@import './styles/tokens.css';
+
+/* ---------- Base page ---------- */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html, body { margin: 0; }
+
+body {
+  /* Odyssey sky: misty blue-grey at the top, fading into parchment */
+  background: linear-gradient(to bottom, var(--sky-top) 0, var(--sea-deep) 70vh) fixed;
+  color: var(--ink);
+  font: var(--text-body);
+}
+
+/* Every control gets the same clear focus outline (keyboard users). */
+:focus-visible {
+  outline: var(--border-pixel) solid var(--focus-ring);
+  outline-offset: var(--border-pixel);
+  border-radius: var(--radius-control);
+}
+
+/* Pixel art stays sharp when it is scaled up. */
+.pixel-art { image-rendering: pixelated; }
+
+/* ---------- Panel: the framed card everything sits in ---------- */
+.panel {
+  background: var(--panel);
+  border: var(--border-soft) solid var(--frame);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-pixel);
+  padding: var(--space-5);
+}
+
+.panel-title {
+  margin: 0 0 var(--space-4);
+  font: var(--text-title);
+  color: var(--heading);
+}
+
+/* Visible only to screen readers. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ---------- Stone pixel button ----------
+   A stone face with a light strip on top and a dark band at the bottom (inset shadows),
+   a dark pixel outline, and a hard shadow. Hover lifts it; pressing sinks it 4px. */
+.stone-button {
+  --face: var(--stone);
+  font: var(--text-label);
+  color: var(--on-accent);
+  background: var(--face);
+  border: var(--border-soft) solid var(--pixel-edge);
+  border-radius: var(--radius-control);
+  padding: var(--space-3) var(--space-4) calc(var(--space-3) + var(--space-2));
+  box-shadow:
+    inset 0 var(--border-pixel) 0 var(--stone-light),
+    inset 0 calc(-2 * var(--border-pixel)) 0 var(--stone-dark),
+    var(--shadow-pixel);
+  cursor: pointer;
+  transition: transform 80ms steps(1), box-shadow 80ms steps(1);
+}
+
+.stone-button:hover:not(:disabled) {
+  transform: translate(-2px, -2px);
+  box-shadow:
+    inset 0 var(--border-pixel) 0 var(--stone-light),
+    inset 0 calc(-2 * var(--border-pixel)) 0 var(--stone-dark),
+    var(--shadow-pixel-lg);
+}
+
+.stone-button:active:not(:disabled) {
+  transform: translate(0, var(--border-pixel));
+  box-shadow:
+    inset 0 var(--border-pixel) 0 var(--stone-light),
+    inset 0 calc(-1 * var(--border-pixel)) 0 var(--stone-dark),
+    var(--shadow-none);
+}
+
+.stone-button:disabled { cursor: wait; opacity: 0.7; }
+
+.stone-button.is-small {
+  padding: var(--space-2) var(--space-4) calc(var(--space-2) + var(--space-1));
+  box-shadow:
+    inset 0 var(--border-thin) 0 var(--stone-light),
+    inset 0 calc(-1 * var(--border-pixel)) 0 var(--stone-dark);
+}
+.stone-button.is-small:hover:not(:disabled),
+.stone-button.is-small:active:not(:disabled) {
+  box-shadow:
+    inset 0 var(--border-thin) 0 var(--stone-light),
+    inset 0 calc(-1 * var(--border-thin)) 0 var(--stone-dark);
+}
+.stone-button.is-small:hover:not(:disabled) { transform: translateY(-1px); }
+.stone-button.is-small:active:not(:disabled) { transform: translateY(var(--border-thin)); }
+
+.stone-button.is-teal { --face: var(--teal); } /* Run: the one teal button per screen */
+.stone-button.is-gold { --face: var(--gold); } /* Next quest */
+
+/* ---------- Student page layout ---------- */
+.student-page {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Pixel mist clouds: a grid of small dots, shown only inside a few soft cloud shapes. */
+.student-page::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: radial-gradient(var(--mist) 1.5px, transparent 2px);
+  background-size: 8px 8px;
+  -webkit-mask-image:
+    radial-gradient(ellipse 30% 12% at 18% 12%, black 0 40%, transparent 70%),
+    radial-gradient(ellipse 34% 10% at 72% 22%, black 0 40%, transparent 70%),
+    radial-gradient(ellipse 26% 9% at 40% 46%, black 0 35%, transparent 70%),
+    radial-gradient(ellipse 30% 10% at 88% 60%, black 0 35%, transparent 70%);
+  mask-image:
+    radial-gradient(ellipse 30% 12% at 18% 12%, black 0 40%, transparent 70%),
+    radial-gradient(ellipse 34% 10% at 72% 22%, black 0 40%, transparent 70%),
+    radial-gradient(ellipse 26% 9% at 40% 46%, black 0 35%, transparent 70%),
+    radial-gradient(ellipse 30% 10% at 88% 60%, black 0 35%, transparent 70%);
+}
+
+.top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-4) clamp(var(--space-3), 4vw, var(--space-6)) 0;
+}
+
+.logo {
+  margin: 0;
+  font: var(--text-display);
+  font-size: clamp(20px, 3vw, 32px);
+  color: var(--heading);
+}
+
+/* Wide screens: quest on top, the code box left, Athena right.
+   Narrow screens: everything in one column. */
+.student-main {
+  flex: 1;
+  width: 100%;
+  padding: var(--space-4) clamp(var(--space-3), 4vw, var(--space-6)) var(--space-6);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-areas: "quest" "code" "athena";
+  gap: var(--space-5);
+  align-content: start;
+}
+
+@media (min-width: 900px) {
+  .student-main {
+    grid-template-columns: minmax(0, 1fr) clamp(300px, 28vw, 420px);
+    grid-template-areas:
+      "quest  ."
+      "code   athena";
+  }
+}
+
+.quest-box { grid-area: quest; }
+.ide { grid-area: code; }
+.athena-panel { grid-area: athena; }
+
+/* The sea: pixel waves, then deep navy water to the bottom of the page. */
+.sea {
+  background: linear-gradient(to bottom, var(--sea-top), var(--sea-bottom));
+  min-height: 96px;
+}
+
+.wave-border {
+  height: 56px;
+  margin-top: -1px;
+  background: var(--sea-deep) url('/pixel/wave-border.svg') repeat-x;
+  background-size: 128px 56px;
+  image-rendering: pixelated;
+}
+
+/* ---------- Quest box: a game-style quest log ----------
+   A wooden tab on top, a parchment card in a wooden frame, a progress bar,
+   and one quest row: scroll icon, details, status badge. */
+.quest-box { display: flex; flex-direction: column; }
+
+.quest-tabs {
+  display: flex;
+  padding-left: var(--space-4);
+}
+
+.quest-tab {
+  padding: var(--space-2) var(--space-4);
+  background: var(--parchment);
+  color: var(--on-accent);
+  font: var(--text-label);
+  border: var(--border-soft) solid var(--wood-frame);
+  border-bottom: none;
+  border-radius: var(--radius-control) var(--radius-control) 0 0;
+  position: relative;
+  top: var(--border-soft);  /* sits on the frame so the tab and card join */
+}
+
+.quest-frame {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--parchment);
+  color: var(--on-accent);
+  border: var(--border-soft) solid var(--wood-frame);
+  border-radius: var(--radius-panel);
+  box-shadow: inset 0 0 0 var(--border-thin) var(--wood-light), var(--shadow-pixel);
+}
+
+/* Progress: a chunky bar with a label, like the reference's 1/6 bar */
+.quest-progress {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.quest-bar {
+  flex: 1;
+  height: var(--space-3);
+  background: var(--parchment-row);
+  border: var(--border-thin) solid var(--wood-frame);
+  border-radius: var(--radius-chip);
+  overflow: hidden;
+}
+
+.quest-bar-fill {
+  height: 100%;
+  background: var(--status-green);
+  box-shadow: inset 0 calc(-1 * var(--space-1)) 0 var(--shadow-color);
+  transition: width 400ms steps(4);
+}
+
+.quest-progress-label {
+  font: var(--text-small);
+  white-space: nowrap;
+}
+
+/* The quest row */
+.quest-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  background: var(--parchment-row);
+  border: var(--border-thin) solid var(--wood-light);
+  border-radius: var(--radius-control);
+}
+
+.quest-icon { width: 64px; height: 64px; }
+
+.quest-body { display: grid; gap: var(--space-2); }
+
+.quest-title {
+  margin: 0;
+  font: var(--text-title);
+  color: var(--on-accent);
+}
+
+.quest-description {
+  margin: 0;
+  font: var(--text-body-lg);
+}
+
+.quest-example {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.quest-example-label { font: var(--text-small); }
+
+.quest-example pre {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  background: var(--editor-bg);
+  color: var(--editor-ink);
+  font: var(--text-code);
+  border-radius: var(--radius-chip);
+  white-space: pre-wrap;
+}
+
+/* Status badge on the right: amber while in progress, green when completed */
+.quest-status {
+  align-self: center;
+  padding: var(--space-2) var(--space-3);
+  font: var(--text-label);
+  color: var(--on-accent);
+  background: var(--stone);
+  border: var(--border-thin) solid var(--pixel-edge);
+  border-radius: var(--radius-chip);
+  white-space: nowrap;
+}
+
+.quest-status.is-in-progress { background: var(--status-yellow); }
+.quest-status.is-completed { background: var(--status-green); }
+
+/* Narrow screens: the status moves under the details */
+@media (max-width: 600px) {
+  .quest-item { grid-template-columns: auto minmax(0, 1fr); }
+  .quest-status { grid-column: 2; justify-self: start; }
+  .quest-icon { width: 48px; height: 48px; }
+}
+
+/* ---------- Code box (LeetCode style): toolbar, editor, Output tab, output ----------
+   One dark box with thin dividers. Its colors are the opposite of the page. */
+.ide {
+  display: flex;
+  flex-direction: column;
+  background: var(--editor-bg);
+  color: var(--editor-ink);
+  border: var(--border-soft) solid var(--frame);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-pixel);
+  overflow: hidden;
+}
+
+.ide-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--editor-bar);
+  border-bottom: 1px solid var(--editor-line);
+}
+
+.ide-language {
+  font: var(--text-small);
+  color: var(--editor-ink);
+}
+
+.ide-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.run-tip {
+  font: var(--text-small);
+  color: var(--editor-dim);
+}
+
+.ide-editor .cm-editor {
+  font: var(--text-code);
+  background: var(--editor-bg);
+  color: var(--editor-ink);
+}
+
+.ide-editor .cm-editor.cm-focused { outline: none; }
+
+/* Keyboard focus on the editor: a teal line inside the box instead of an outline. */
+.ide-editor:focus-within { box-shadow: inset 0 0 0 var(--border-thin) var(--focus-ring); }
+
+.ide-editor .cm-content { padding: var(--space-3) 0; }
+
+.ide-editor .cm-gutters {
+  background: var(--editor-bg);
+  color: var(--editor-dim);
+  border-right: none;
+}
+
+.ide-editor .cm-scroller { font-family: var(--font-code); }
+
+/* The Output tab row: a divider line on top, like LeetCode's split. */
+.ide-tabs {
+  border-top: 1px solid var(--editor-line);
+}
+
+.ide-tab {
+  margin: 0;
+  padding-bottom: var(--space-1);
+  font: var(--text-small);
+  color: var(--editor-ink);
+  border-bottom: var(--border-thin) solid var(--editor-ink);
+}
+
+.output-summary {
+  font: var(--text-small);
+  color: var(--editor-dim);
+}
+
+.output-summary.is-problem { color: var(--editor-error); }
+.output-summary.is-done { color: var(--status-green); }
+
+/* ---------- Output box ---------- */
+.output-box {
+  min-height: 140px;
+  margin: 0;
+  padding: var(--space-4);
+  background: var(--editor-bg);
+  color: var(--editor-ink);
+  font: var(--text-code);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.output-empty { color: var(--editor-dim); }
+
+.output-lead {
+  display: block;
+  margin-bottom: var(--space-2);
+  font: var(--text-body);
+  font-weight: 800;
+}
+
+.output-error { color: var(--editor-error); }
+
+/* ---------- Athena panel ---------- */
+.athena-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  align-self: start;
+}
+
+.athena-panel .panel-title { align-self: flex-start; }
+
+/* The owl bobs in two frames (steps, not smooth), faster while she thinks. */
+.athena-owl {
+  width: 96px;
+  height: 96px;
+  animation: owl-bob 1.2s steps(2) infinite;
+}
+
+.athena-owl.is-thinking { animation-duration: 0.5s; }
+
+@keyframes owl-bob {
+  from { transform: translateY(0); }
+  to { transform: translateY(calc(-1 * var(--space-1))); }
+}
+
+/* The speech bubble, with a small pixel tail pointing up at the owl. */
+.hint-bubble {
+  position: relative;
+  width: 100%;
+  padding: var(--space-3);
+  background: var(--sail);
+  color: var(--on-accent);
+  border: var(--border-soft) solid var(--frame);
+  border-radius: var(--radius-control);
+  box-shadow: var(--shadow-pixel);
+  padding: var(--space-4);
+  animation: bubble-pop 240ms steps(3);
+}
+
+.hint-bubble::before {
+  content: "";
+  position: absolute;
+  top: calc(-3 * var(--space-1));
+  left: calc(50% - var(--space-2));
+  width: var(--space-3);
+  height: var(--space-2);
+  background: var(--frame);
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
+
+@keyframes bubble-pop {
+  from { transform: scale(0.85); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.hint-text {
+  margin: 0;
+  font: var(--text-hint);
+}
+
+.hint-idle {
+  margin: 0;
+  font: var(--text-body-lg);
+}
+
+/* "Athena is thinking..." : three dots that appear one by one. */
+.thinking-dots::after {
+  content: "";
+  animation: dots 1.2s steps(4) infinite;
+}
+
+@keyframes dots {
+  0% { content: ""; }
+  25% { content: "."; }
+  50% { content: ".."; }
+  75% { content: "..."; }
+}
+
+/* Hint level: 3 square pips, filled up to the current level. */
+.hint-pips {
+  display: flex;
+  gap: var(--space-1);
+  margin-top: var(--space-3);
+}
+
+.hint-pip {
+  width: var(--space-3);
+  height: var(--space-3);
+  border: var(--border-thin) solid var(--pixel-edge);
+  border-radius: var(--radius-chip);
+}
+
+.hint-pip.is-on { background: var(--status-yellow); }
+
+.debug-line {
+  margin: 0;
+  font: var(--text-small);
+  font-family: var(--font-code);
+  color: var(--ink-dim);
+}
+
+/* ---------- Motion off for kids who need it ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

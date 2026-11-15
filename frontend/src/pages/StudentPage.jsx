@@ -3,7 +3,8 @@ import { useParams, useSearchParams } from 'react-router-dom'
 import CodeMirror from '@uiw/react-codemirror'
 import { python } from '@codemirror/lang-python'
 import OutputBox from '../components/OutputBox.jsx'
-import HintBox from '../components/HintBox.jsx'
+import AthenaPanel from '../components/AthenaPanel.jsx'
+import QuestBox from '../components/QuestBox.jsx'
 import DebugLine from '../components/DebugLine.jsx'
 import usePyodide from '../usePyodide.js'
 import { useActivity } from '../activity.js'
@@ -21,12 +22,15 @@ function nextHint(currentHint, reply) {
   return currentHint
 }
 
-// What the Run button says in each state.
+// What the Run/Stop button says in each state. While code runs, it becomes Stop.
 const RUN_LABELS = {
-  loading: 'Getting the ship ready...',
+  loading: 'Getting ready...',
   ready: 'Run',
-  running: 'Running...',
+  running: 'Stop',
 }
+
+// The editor is the opposite of the page: black on the cream "day" page, cream on the navy "night" page.
+const EDITOR_THEME = document.documentElement.dataset.theme === 'night' ? 'light' : 'dark'
 
 // Placeholder layout: the pixel design comes in B6.
 export default function StudentPage() {
@@ -36,11 +40,11 @@ export default function StudentPage() {
 
   const [task, setTask] = useState(null)
   const [code, setCode] = useState('')
-  const [result, setResult] = useState({ output: '', error: '' })
+  const [result, setResult] = useState({ output: '', error: '', stopped: false })
   const [hint, setHint] = useState(null)
   const [thinking, setThinking] = useState(false)
   const [shipStatus, setShipStatus] = useState('green')
-  const { status, run } = usePyodide()
+  const { status, run, stop } = usePyodide()
   const activity = useActivity()
 
   // The heartbeat timer reads these "boxes" so it always sends the newest code
@@ -104,10 +108,11 @@ export default function StudentPage() {
   // 3. Run: run Python in the browser, then send the result as a "run" snapshot.
   async function handleRun() {
     if (status !== 'ready') return
-    const { output, error } = await run(code)
-    setResult({ output, error })
+    const { output, error, stopped } = await run(code)
+    setResult({ output, error, stopped })
     resultRef.current = { output, error }
-    if (!task) return
+    // A run the kid stopped on purpose is not sent: it isn't a real result for Argus.
+    if (!task || stopped) return
 
     setThinking(true)
     runWaitingRef.current = true
@@ -140,29 +145,83 @@ export default function StudentPage() {
     }
   }
 
+  const running = status === 'running'
+
+  // Quest progress: done at Ithaca; in progress once the kid has written or run something
+  // (or Athena is already helping); otherwise not started.
+  let questProgress = 'not-started'
+  if (shipStatus === 'ithaca') questProgress = 'completed'
+  else if (code.trim() || result.output || result.error || shipStatus !== 'green') questProgress = 'in-progress'
+
   return (
-    <main className="student-page">
-      <section className="task-card">
-        <h1>{task ? task.title : 'Loading your quest...'}</h1>
-        {task && <p>{task.instructions}</p>}
-      </section>
-      <div onKeyDownCapture={handleKeyDownCapture}>
-        <CodeMirror
-          value={code}
-          height="200px"
-          extensions={[python()]}
-          onChange={handleChange}
-          onUpdate={activity.onEditorUpdate}
-        />
+    <div className="student-page">
+      <header className="top-bar">
+        <p className="logo">MentorThena</p>
+      </header>
+
+      <main className="student-main">
+        {/* Row 1: the quest box */}
+        <QuestBox task={task} progress={questProgress} />
+
+        {/* Left column: one code box like LeetCode: toolbar, editor, then the Output tab */}
+        <section className="ide" aria-label="Your code">
+          <div className="ide-bar">
+            <span className="ide-language">Python</span>
+            <div className="ide-actions">
+              <span className="run-tip">Ctrl + Enter</span>
+              <button
+                type="button"
+                className={`stone-button is-small${running ? '' : ' is-teal'}`}
+                onClick={running ? stop : handleRun}
+                disabled={status === 'loading'}
+              >
+                {RUN_LABELS[status]}
+              </button>
+            </div>
+          </div>
+
+          <div className="ide-editor" onKeyDownCapture={handleKeyDownCapture}>
+            <CodeMirror
+              value={code}
+              height="clamp(280px, 48vh, 600px)"
+              theme={EDITOR_THEME}
+              extensions={[python()]}
+              onChange={handleChange}
+              onUpdate={activity.onEditorUpdate}
+              aria-label="Python code editor"
+            />
+          </div>
+
+          <div className="ide-bar ide-tabs">
+            <h2 className="ide-tab">Output</h2>
+            <OutputSummary result={result} running={running} atIthaca={shipStatus === 'ithaca'} />
+          </div>
+          <OutputBox output={result.output} error={result.error} running={running} stopped={result.stopped} />
+        </section>
+
+        {/* Right column: Athena */}
+        <AthenaPanel hint={hint} thinking={thinking} atIthaca={shipStatus === 'ithaca'} />
+
+        {debug && <DebugLine peek={activity.peek} />}
+      </main>
+
+      {/* The sea along the bottom of the page */}
+      <div className="sea" aria-hidden="true">
+        <div className="wave-border" />
       </div>
-      <button type="button" className="run-button" onClick={handleRun} disabled={status !== 'ready'}>
-        {RUN_LABELS[status]}
-      </button>
-      <OutputBox output={result.output} error={result.error} running={status === 'running'} />
-      {shipStatus === 'ithaca'
-        ? <div className="ithaca-box">You reached Ithaca! Great sailing, your code works!</div>
-        : <HintBox hint={hint} thinking={thinking} />}
-      {debug && <DebugLine peek={activity.peek} />}
-    </main>
+    </div>
   )
+}
+
+// The short result line on the right of the Output tab, like LeetCode's "Accepted".
+function OutputSummary({ result, running, atIthaca }) {
+  let text = null
+  let tone = ''
+  if (running) text = 'Running...'
+  else if (result.error) { text = 'Python found a problem'; tone = 'is-problem' }
+  else if (result.stopped) text = 'Stopped'
+  else if (atIthaca) { text = 'Quest complete!'; tone = 'is-done' }
+  else if (result.output) text = 'Ran with no errors'
+  if (!text) return null
+  return <span className={`output-summary ${tone}`}>{text}</span>
 }

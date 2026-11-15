@@ -1,0 +1,123 @@
+/* MentorThena design tokens, copied from the Design System artifact (project/tokens.json).
+   Components use these names only, never hex values, so a light "Day" theme can be added
+   later by redefining this block. */
+:root,
+[data-theme="night"] {
+  /* Color: Twilight voyage */
+  --sea-deep: #1e2a5a;      /* page background */
+  --panel: #27356e;         /* cards, task card, editor, output box */
+  --panel-raised: #324284;  /* top bar, hover, quiet buttons */
+  --border: #6a7bc4;        /* 4px panel frames (decoration only) */
+  --pixel-edge: #0d1433;    /* outlines and the hard pixel shadow */
+  --ink: #f2f4ff;           /* main text */
+  --ink-dim: #c3c9ea;       /* secondary text */
+  --on-accent: #0d1433;     /* text on teal, gold, stone, sail and status colors */
+  --gold: #ffd34d;          /* brand: titles, stars, Ithaca */
+  --tan: #d9a066;           /* owl sprite only */
+  --teal: #3ddbd9;          /* the Run button and links (one per screen) */
+  --stone: #a9bdd6;         /* stone button face */
+  --stone-light: #dbe7f5;   /* stone button top highlight */
+  --stone-dark: #4f6688;    /* stone button bottom band */
+  --sail: #f6f1e3;          /* hint bubble background */
+  --wood: #8b5a2b;          /* sprites only */
+  --status-green: #5ee38a;  /* sailing */
+  --status-yellow: #ffb020; /* getting hints */
+  --status-red: #ff8a8a;    /* needs the teacher (teacher view) and error text */
+  --ithaca: var(--gold);    /* done */
+  --focus-ring: var(--teal);
+  --heading: var(--gold);   /* panel titles and the logo */
+  --frame: var(--border);   /* soft card frames */
+  --shadow-color: var(--pixel-edge); /* the offset block shadow under cards */
+  --page-pattern: var(--panel);
+  --sky-top: var(--sea-deep);
+  --mist: var(--panel);
+  --sea-top: var(--panel-raised);
+  --sea-bottom: var(--pixel-edge);
+  --parchment: var(--sail);
+  --parchment-row: #ece0c2;
+  --wood-frame: var(--wood);
+  --wood-light: #b07a45;
+  --editor-bar: #ebe4d0;    /* night theme: a cream editor, so light bars */
+  --editor-line: #d6ccb0;
+
+  /* Code editor and output box: the opposite of the page (cream on a dark page) */
+  --editor-bg: #f6f1e3;
+  --editor-ink: #1b2245;
+  --editor-dim: #4b5378;    /* line numbers, "Press Run..." */
+  --editor-error: #b42318;  /* Python errors in the output box */
+
+  /* Shadows: offset blocks, no blur */
+  --shadow-pixel: 4px 4px 0 var(--shadow-color);
+  --shadow-pixel-lg: 6px 6px 0 var(--shadow-color);
+  --shadow-none: none;
+}
+
+/* Day theme (the one in use, set on <html> in index.html): a light cream page with
+   dark navy frames and text, and a black code editor. Only the values change;
+   accent, status and sprite colors stay the same as the night theme. */
+[data-theme="day"] {
+  --sea-deep: #f3ead6;      /* page background: parchment cream (the lower sky) */
+  --panel: #fffaf0;         /* cards */
+  --panel-raised: #efe4c6;  /* top bar, hover, quiet buttons */
+  --border: #1e2a5a;        /* navy panel frames */
+  --ink: #1b2245;           /* main text (about 13:1 on the page) */
+  --ink-dim: #4b5378;       /* secondary text (about 7:1) */
+  --heading: #1e2a5a;       /* gold is too faint on cream, so titles are navy */
+  --focus-ring: #0e6e6c;    /* a darker teal that shows on cream */
+  --frame: #6a7bc4;         /* soft periwinkle card frames (the night border color) */
+  --shadow-color: #e2d6b8;  /* a darker parchment: a soft shadow, not a black one */
+  --page-pattern: #f1e6c9;
+
+  /* Odyssey sky: misty blue-grey at the top fading into parchment, pixel mist clouds,
+     and a navy sea along the bottom (it continues the wave tile's bottom color). */
+  --sky-top: #cfd6df;
+  --mist: #b9c3d0;          /* the dithered pixel dots that make the clouds */
+  --sea-top: #324284;
+  --sea-bottom: #1e2a5a;
+
+  /* Quest box: parchment in a wooden frame, like a game quest log */
+  --parchment: #f6f1e3;     /* the card (same as sail) */
+  --parchment-row: #ece0c2; /* the quest row, a shade darker */
+  --wood-frame: #8b5a2b;    /* the frame and tab (same as wood) */
+  --wood-light: #b07a45;    /* the inner edge of the frame */
+
+  /* Code editor bars (toolbar, output tab row) and dividers, like LeetCode */
+  --editor-bar: #1d2030;
+  --editor-line: #2e3347;
+
+  --editor-bg: #14161f;     /* near-black editor */
+  --editor-ink: #f6f1e3;    /* cream code text */
+  --editor-dim: #b9b3a0;
+  --editor-error: #ff8a8a;  /* light red reads well on black */
+}
+
+:root {
+  /* Spacing: steps of 8 (space-1 only inside small pieces) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 16px;
+  --space-4: 24px;
+  --space-5: 32px;
+  --space-6: 48px;
+
+  --radius-none: 0px;
+  --radius-panel: 16px;     /* soft corners on cards */
+  --radius-control: 12px;   /* buttons, the editor, the output box, the hint bubble */
+  --radius-chip: 4px;       /* small pieces: hint pips, badges */
+  --border-pixel: 4px;
+  --border-soft: 3px;       /* the gentle frame around cards */
+  --border-thin: 2px;
+
+  /* Type */
+  --font-pixel: "Press Start 2P", ui-monospace, monospace;
+  --font-reading: Nunito, "Trebuchet MS", system-ui, sans-serif;
+  --font-code: "JetBrains Mono", ui-monospace, Consolas, monospace;
+  --text-display: 400 32px/40px var(--font-pixel); /* logo, Ithaca title */
+  --text-title: 400 16px/24px var(--font-pixel);   /* panel and page titles */
+  --text-label: 400 12px/16px var(--font-pixel);   /* button labels, ship names */
+  --text-hint: 800 22px/32px var(--font-reading);  /* Athena's hints */
+  --text-body-lg: 700 18px/28px var(--font-reading); /* task instructions */
+  --text-body: 600 16px/24px var(--font-reading);
+  --text-small: 700 14px/20px var(--font-reading); /* never smaller than this */
+  --text-code: 400 16px/24px var(--font-code);
+}
