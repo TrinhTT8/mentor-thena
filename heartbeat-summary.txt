@@ -1,0 +1,64 @@
+HOW THE HEARTBEAT WORKS (frontend -> Argus)
+
+Every 10 seconds, the Student page sends POST /api/snapshot with
+event: "heartbeat", the current code, and an "activity" object with 4 numbers.
+
+
+THE 4 NUMBERS
+
+1. seconds_since_last_key
+   A stopwatch: seconds since the kid last pressed a key.
+   Resets to 0 only when the kid presses a key.
+   Otherwise it keeps growing across heartbeats (10, 20, 30 ...).
+
+2. seconds_since_cursor_move
+   A stopwatch: seconds since the cursor last moved
+   (typing, clicking, or arrow keys all move it).
+   Resets to 0 only when the kid types, clicks, or moves the cursor.
+
+3. keys_typed
+   Letters, numbers, symbols, space, Enter and Tab pressed
+   since the PREVIOUS heartbeat.
+   Resets to 0 after every heartbeat.
+
+4. keys_deleted
+   Backspace and Delete pressed since the PREVIOUS heartbeat.
+   Resets to 0 after every heartbeat.
+
+Not counted: shortcuts (like Ctrl+Enter to run) and modifier keys alone (like Shift).
+
+A snapshot with event: "run" is also sent on every Run, with code, output and error.
+
+
+HOW ARGUS SHOULD READ IT (values in config.STUCK_RULES)
+
+Idle:
+  Stuck when BOTH seconds_since_last_key AND seconds_since_cursor_move
+  are 60 or more.
+  A kid who clicks around reading their code is not idle.
+
+Typing and deleting a lot:
+  Add up keys_typed and keys_deleted over the LAST 3 HEARTBEATS (about 30 s).
+  Stuck when deleted / typed is 0.7 or more
+  AND the total keys (typed + deleted) are at least 20.
+  Example: typed 6 + 12 + 8 = 26, deleted 0 + 10 + 8 = 18.
+           18 / 26 = 69%  -> not stuck yet.
+
+Then the usual rules apply:
+  - The first idle hint is level 1.
+  - 45-second cooldown between hints.
+  - After level 3, the ship turns red for the teacher.
+
+
+EXAMPLE TIMELINE (Mia stops typing at 30 s, clicks on line 2 at 55 s)
+
+Time      What Mia does           typed  deleted  since key  since cursor
+0-10 s    types print            6      0        0          0
+10-20 s   types 12, deletes 10    12     10       1          1
+20-30 s   types 8, deletes 8      8      8        2          2
+30-40 s   stops and stares        0      0        12         12
+40-50 s   nothing                 0      0        22         22
+50-60 s   clicks line 2 at 55 s   0      0        32         5
+60-70 s   nothing                 0      0        42         15
+80-90 s   nothing                 0      0        62         35   -> not idle (clicked 35 s ago)
+120 s     nothing                 0      0        92         65   -> IDLE: Athena gives a level 1 hint
