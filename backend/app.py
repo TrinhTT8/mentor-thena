@@ -98,22 +98,16 @@ def post_snapshot():
     cue = None
 
     if event == "run":
-        run_state, progress = watcher.update_run_state(
+        # A new error or a wrong output does NOT reset the hint level.
+        # Only Ithaca or the teacher's resolve puts the ship back to green.
+        # So the "progress" value is not used here.
+        run_state, _progress = watcher.update_run_state(
             student,
             snapshot["error"],
             snapshot["output"],
             expected_output,
         )
         changes.update(run_state)
-
-        # The student is moving forward: a yellow ship goes back to green.
-        # A red ship stays red until the teacher helps.
-        if progress and status == "yellow":
-            status = "green"
-            hint_level = 0
-            stuck_since = None
-            changes["stuck_reason"] = None
-            changes["concept"] = None
 
         cue = watcher.find_run_cue(run_state)
 
@@ -127,9 +121,15 @@ def post_snapshot():
 
         cue = watcher.find_heartbeat_cue(activity, recent_activity)
 
-    # Argus found a cue, and the last hint was long enough ago.
+    # Run cues (error, wrong output) get the next hint right away.
+    # Heartbeat cues (idle, churn) wait for the cooldown.
+    cooling_down = False
+    if event == "heartbeat":
+        cooling_down = watcher.in_cooldown(student, now)
+
+    # Argus found a cue, and it is not waiting for the cooldown.
     new_hint = None
-    if cue is not None and not watcher.in_cooldown(student, now):
+    if cue is not None and not cooling_down:
         if hint_level >= config.MAX_HINT_LEVEL:
             # Already had the level 3 hint: the teacher is needed.
             status = "red"

@@ -170,9 +170,13 @@ curl -X POST http://localhost:5000/api/snapshot -H "Content-Type: application/js
           "text": "Python lines that start with if, for or while need something special at the end. Can you spot it?",
           "from_ships_log": false}}
 ```
-Running it again within 20 s gives no new hint (cooldown).
-After 20 s, the next run gives level 2, then level 3, then the ship turns red.
+Running it again right away gives level 2, then level 3.
+The next stuck cue after level 3 turns the ship red (no new hint;
+`/api/status/s1` keeps showing the level 3 hint).
 A run with no error but the wrong output also gets a hint on the first run.
+A new error or a wrong output does not reset the hint level.
+Only Ithaca or the teacher's resolve does.
+The cooldown (30 s) only applies to idle and type-and-delete heartbeats.
 (The numbers live in `config.STUCK_RULES`.)
 
 Reach Ithaca: run with the right output
@@ -195,7 +199,7 @@ curl -X POST http://localhost:5000/api/snapshot -H "Content-Type: application/js
 {"status": "green", "hint": null}
 ```
 
-Heartbeat, student is idle (no key AND no cursor move for 12 s or more)
+Heartbeat, student is idle (no key AND no cursor move for 7 s or more)
 ```
 curl -X POST http://localhost:5000/api/snapshot -H "Content-Type: application/json" -d "{\"student_id\":\"s1\",\"task_id\":\"t2\",\"event\":\"heartbeat\",\"code\":\"\",\"output\":\"\",\"error\":\"\",\"activity\":{\"seconds_since_last_key\":15,\"seconds_since_cursor_move\":15,\"keys_typed\":0,\"keys_deleted\":0}}"
 ```
@@ -248,7 +252,7 @@ curl http://localhost:5000/api/seamap/c1
    {"id": "s1", "name": "Maya", "status": "green", "reason": null,
     "concept": null, "hint_level": 0, "stuck_since": null},
    {"id": "s4", "name": "Noah", "status": "yellow",
-    "reason": "No typing for 12 seconds", "concept": "indentation",
+    "reason": "No typing for 7 seconds", "concept": "indentation",
     "hint_level": 2, "stuck_since": "2026-11-14T23:33:12.990000+00:00"}
  ],
  "stats": {"avg_seconds_stuck": 113, "siren_blocks": 0}}
