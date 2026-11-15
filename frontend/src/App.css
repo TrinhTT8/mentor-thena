@@ -49,30 +49,30 @@ body {
   font: var(--text-label);
   color: var(--on-accent);
   background: var(--face);
-  border: var(--border-soft) solid var(--pixel-edge);
+  border: var(--border-thin) solid var(--pixel-edge);
   border-radius: var(--radius-control);
-  padding: var(--space-3) var(--space-4) calc(var(--space-3) + var(--space-2));
+  padding: var(--space-2) var(--space-4) calc(var(--space-2) + var(--space-1));
   box-shadow:
-    inset 0 var(--border-pixel) 0 var(--stone-light),
-    inset 0 calc(-2 * var(--border-pixel)) 0 var(--stone-dark),
-    var(--shadow-pixel);
+    inset 0 var(--border-thin) 0 var(--stone-light),
+    inset 0 calc(-1 * var(--border-pixel)) 0 var(--stone-dark),
+    3px 3px 0 var(--pixel-edge);
   cursor: pointer;
   transition: transform 80ms steps(1), box-shadow 80ms steps(1);
 }
 
 .stone-button:hover:not(:disabled) {
-  transform: translate(-2px, -2px);
+  transform: translate(-1px, -1px);
   box-shadow:
-    inset 0 var(--border-pixel) 0 var(--stone-light),
-    inset 0 calc(-2 * var(--border-pixel)) 0 var(--stone-dark),
-    var(--shadow-pixel-lg);
+    inset 0 var(--border-thin) 0 var(--stone-light),
+    inset 0 calc(-1 * var(--border-pixel)) 0 var(--stone-dark),
+    4px 4px 0 var(--pixel-edge);
 }
 
 .stone-button:active:not(:disabled) {
-  transform: translate(0, var(--border-pixel));
+  transform: translate(2px, 2px);
   box-shadow:
-    inset 0 var(--border-pixel) 0 var(--stone-light),
-    inset 0 calc(-1 * var(--border-pixel)) 0 var(--stone-dark),
+    inset 0 var(--border-thin) 0 var(--stone-light),
+    inset 0 calc(-1 * var(--border-thin)) 0 var(--stone-dark),
     var(--shadow-none);
 }
 
@@ -148,19 +148,30 @@ body {
   padding: var(--space-4) clamp(var(--space-3), 4vw, var(--space-6)) 0;
 }
 
+/* The logo: pixel mark + "Mentor" (navy) "Thena" (brown) */
 .logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
   margin: 0;
   font: var(--text-display);
   font-size: clamp(32px, 4vw, 48px);
   color: var(--heading);
 }
 
+.logo-mark {
+  width: clamp(48px, 5vw, 66px);
+  height: auto;
+}
+
+.logo-accent { color: var(--logo-accent); }
+
 /* Wide screens: quest banner across the top, the code box left, Athena right.
    Narrow screens: everything in one column. */
 .student-main {
   flex: 1;
   width: 100%;
-  padding: var(--space-4) clamp(var(--space-3), 4vw, var(--space-6)) var(--space-6);
+  padding: var(--space-4) clamp(var(--space-3), 4vw, var(--space-6)) var(--space-4);
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-template-areas: "quest" "code" "athena";
@@ -183,12 +194,48 @@ body {
 
 /* The waves along the bottom of the page: only the wave tile, no extra water under it.
    The tile is scaled up with the screen (it keeps its shape) and repeats across. */
-.wave-border {
-  height: clamp(72px, 8vw, 120px);
+/* Coding page only: see-through pixel waves along the bottom of the screen,
+   behind everything (the rocks sit in front of them). */
+.page-waves {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  height: clamp(56px, 6vw, 96px);
   background: url('/pixel/wave-border.svg') repeat-x left bottom;
   background-size: auto 100%;
   image-rendering: pixelated;
+  opacity: 0.45;
+  pointer-events: none;
 }
+
+/* Two rock cliffs in the bottom corners of the screen, one on each side.
+   The right one is the same picture, mirrored. They stay put behind the content
+   (text, forms and buttons can sit on top of them) and take up no page space. */
+.shore-border {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  height: clamp(72px, 9vw, 140px);
+  pointer-events: none;
+}
+
+.shore-border::before,
+.shore-border::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  height: 100%;
+  aspect-ratio: 28 / 24; /* the cliff picture's shape */
+  background: url('/pixel/sea-cliff.svg') no-repeat bottom / contain;
+  image-rendering: pixelated;
+}
+
+.shore-border::before { left: 0; }
+.shore-border::after { right: 0; transform: scaleX(-1); }
 
 /* ---------- The kid's ship chip (top right) ---------- */
 .my-ship {
@@ -227,6 +274,7 @@ body {
 .status-square.is-green { background: var(--status-green); }
 .status-square.is-yellow { background: var(--status-yellow); }
 .status-square.is-ithaca { background: var(--ithaca); }
+.status-square.is-red { background: var(--status-red); }
 
 /* ---------- Quest banner ---------- */
 .quest-banner {
@@ -283,7 +331,7 @@ body {
   white-space: nowrap;
 }
 
-.quest-status.is-in-progress { background: var(--status-yellow); }
+.quest-status.is-in-progress { background: var(--amber); }
 .quest-status.is-completed { background: var(--status-green); }
 
 /* The teacher's example, on the right */
@@ -400,7 +448,7 @@ span.ide-tab { cursor: default; }
 /* Output (Result tab) and the Goal tab */
 .output-box,
 .goal-box {
-  min-height: 140px;
+  min-height: 112px;
   margin: 0;
   padding: var(--space-3) var(--space-4);
   background: var(--editor-bg);
@@ -500,7 +548,7 @@ span.ide-tab { cursor: default; }
   box-shadow: var(--shadow-pixel);
 }
 
-.hint-card.is-hint { background: var(--status-yellow); }
+.hint-card.is-hint { background: var(--amber); }
 .hint-card.is-thinking,
 .hint-card.is-idle { background: var(--sail); }
 .hint-card.is-done { background: var(--status-green); }
@@ -568,17 +616,102 @@ span.ide-tab { cursor: default; }
 }
 
 /* Encouragement at the bottom */
-.athena-tip {
+/* Argus the dog, at the bottom of Athena's panel below a dashed line.
+   Dog on the left, his name and line on the right, lined up on their middles. */
+.argus {
   margin-top: auto;
   display: flex;
-  align-items: flex-start;
-  gap: var(--space-2);
-  padding: var(--space-3);
-  background: var(--parchment);
-  border: var(--border-thin) solid var(--wood-light);
+  align-items: center;
+  gap: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: var(--border-thin) dashed var(--wood-light);
 }
 
-.athena-tip p { margin: 0; font: var(--text-small); }
+/* The picture area: 108 x 68. The standing dog starts 12px in, so the tail
+   (a separate picture) can stick out on the left and join his back. */
+.argus-art {
+  position: relative;
+  flex-shrink: 0;
+  width: 108px;
+  height: 68px;
+}
+
+.argus-stand {
+  position: absolute;
+  left: 12px;
+  bottom: 0;
+  width: 96px;
+  height: 68px;
+}
+
+/* Only the tail moves: it swings from where it joins his back (its bottom-right corner).
+   Awake: a steady wag. Happy (Ithaca): a fast wag. */
+.argus-tail {
+  position: absolute;
+  left: 0;
+  top: 16px;
+  width: 24px;
+  height: 24px;
+  transform-origin: 100% 100%;
+  animation: tail-wag 0.8s ease-in-out infinite;
+}
+
+.argus.is-happy .argus-tail { animation-duration: 0.3s; }
+
+@keyframes tail-wag {
+  0%, 100% { transform: rotate(-12deg); }
+  50% { transform: rotate(14deg); }
+}
+
+/* Asleep: lying down, nothing moves; a quiet "z Z" above his head */
+.argus-sleep {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 96px;
+  height: 36px;
+}
+
+.argus-zzz {
+  position: absolute;
+  right: 4px;
+  top: 4px;
+  font: var(--text-tag);
+  color: var(--ink-dim);
+}
+
+.argus.is-asleep .argus-line { color: var(--ink-dim); }
+
+/* The "!" mark above his head when he spots trouble */
+.argus-mark {
+  position: absolute;
+  top: -22px;
+  right: 6px;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  font: var(--text-label);
+  font-size: 18px;
+  line-height: 1;
+  color: var(--on-accent);
+  background: var(--amber);
+  border: var(--border-thin) solid var(--pixel-edge);
+  animation: card-pop 260ms ease-out;
+}
+
+.argus-words { display: grid; gap: 2px; }
+
+.argus-name {
+  font: var(--text-tag);
+  color: var(--logo-accent);
+}
+
+.argus-line {
+  margin: 0;
+  font: var(--text-small);
+  color: var(--ink);
+}
 
 /* Teacher is coming (ship is red) */
 .teacher-note {
@@ -589,6 +722,1366 @@ span.ide-tab { cursor: default; }
   color: var(--on-accent);
   background: var(--stone-light);
   border: var(--border-thin) solid var(--pixel-edge);
+}
+
+/* ---------- Top bar extras ---------- */
+.top-left {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+}
+
+.back-link {
+  font: var(--text-body);
+  font-weight: 800;
+  color: var(--heading);
+  text-decoration: none;
+}
+
+.back-link:hover { color: var(--focus-ring); }
+
+/* ---------- Home page ---------- */
+.home-top-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.room-chip {
+  padding: var(--space-1) var(--space-3);
+  font: var(--text-small);
+  background: var(--panel);
+  border: var(--border-thin) solid var(--border);
+}
+
+/* Profile button and its drop-down card */
+.profile { position: relative; }
+
+.profile-button {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3) var(--space-1) var(--space-1);
+  font: var(--text-label);
+  color: var(--ink);
+  background: var(--panel);
+  border: var(--border-thin) solid var(--border);
+  box-shadow: 3px 3px 0 var(--border);
+  cursor: pointer;
+}
+
+.profile-avatar {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  background: var(--gold);
+  border: var(--border-thin) solid var(--pixel-edge);
+}
+
+.profile-avatar.is-big { width: 72px; height: 72px; }
+
+.profile-card {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  right: 0;
+  z-index: 10;
+  width: 220px;
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background: var(--parchment);
+  color: var(--on-accent);
+  border: var(--border-soft) solid var(--wood-frame);
+  box-shadow: 6px 6px 0 var(--wood-frame);
+  animation: card-pop 180ms ease-out;
+}
+
+.profile-card-name { margin: 0; font: var(--text-title); color: var(--heading); }
+.profile-card-room { margin: 0; font: var(--text-small); color: var(--ink-dim); }
+
+/* Greeting */
+.home-main {
+  flex: 1;
+  width: 100%;
+  padding: var(--space-3) clamp(var(--space-3), 4vw, var(--space-6)) var(--space-4);
+  display: grid;
+  gap: var(--space-5);
+  align-content: start;
+}
+
+.greeting-title {
+  margin: 0;
+  font: var(--text-display);
+  font-size: clamp(36px, 5vw, 56px);
+  color: var(--heading);
+}
+
+.greeting-sub {
+  margin: 0;
+  font: var(--text-body-lg);
+}
+
+.home-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-5) var(--space-4);
+  align-items: stretch; /* the map and the right column end at the same height */
+}
+
+@media (min-width: 960px) {
+  .home-grid { grid-template-columns: minmax(0, 1fr) clamp(300px, 28vw, 400px); }
+}
+
+/* The map: a navy sea in a wooden frame */
+.voyage-map {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-3);
+  background: var(--sea-bottom);
+  border: var(--border-pixel) solid var(--wood-frame);
+  box-shadow: var(--shadow-pixel);
+}
+
+.map-badge {
+  position: absolute;
+  top: var(--space-4);
+  left: var(--space-4);
+  z-index: 2;
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  padding: var(--space-1) var(--space-3);
+  font: var(--text-small);
+  color: var(--insight-ink);
+  background: var(--sea-bottom);
+  border: var(--border-thin) solid var(--insight-ink);
+}
+
+.map-badge-title { font: var(--text-tag); color: var(--gold); }
+
+/* Height follows the screen so the whole page fits without scrolling */
+.map-sea {
+  position: relative;
+  flex: 1;
+  height: clamp(320px, 54vh, 540px);
+  background: linear-gradient(to bottom, var(--sea-bottom), var(--sea-top) 55%, var(--sea-bottom));
+  overflow: hidden;
+}
+
+/* A line of pixel foam across the whole sea */
+.map-wave {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 20px;
+  background: url("/pixel/wave-line.svg") repeat-x;
+  background-size: 80px 20px;
+  image-rendering: pixelated;
+  opacity: 0.85;
+  animation: wave-drift 6s linear infinite;
+}
+
+/* The middle line drifts the other way, a little slower, so the sea feels alive */
+.map-wave:nth-of-type(2) { animation-direction: reverse; animation-duration: 8s; }
+
+/* Slide the foam by exactly one tile width, so the loop has no jump */
+@keyframes wave-drift {
+  from { background-position-x: 0; }
+  to { background-position-x: 80px; }
+}
+
+/* The dotted route between the islands */
+.map-route {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.map-route polyline {
+  fill: none;
+  stroke: var(--stone-light);
+  stroke-width: 4;
+  stroke-dasharray: 3 12;
+  stroke-linecap: square;
+  vector-effect: non-scaling-stroke;
+}
+
+.map-stops {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Each island sits at its spot (--x, --y set by the page) */
+.map-stop {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  /* put the middle of the island picture on the spot (8px padding + 3px border + half of 65px) */
+  transform: translate(-50%, -44px);
+  z-index: 1;
+}
+
+/* Today's quest keeps an invisible island so its label stays in place under the ship */
+.map-island.is-placeholder { visibility: hidden; }
+
+/* The kid's ship: its own layer on the map, on top of the islands */
+.voyage-ship {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  z-index: 2;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+/* Every quest done: the ship sails from the last island into Ithaca, then docks
+   just to the left of the island */
+.voyage-ship.is-arriving {
+  transform: translate(calc(-50% - 72px), -55%);
+  animation: sail-to-ithaca 2.6s ease-in-out both;
+}
+
+@keyframes sail-to-ithaca {
+  from {
+    left: var(--from-x);
+    top: var(--from-y);
+    transform: translate(-50%, -50%);
+  }
+  to {
+    left: var(--x);
+    top: var(--y);
+    transform: translate(calc(-50% - 72px), -55%);
+  }
+}
+
+.map-stop-button {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  padding: var(--space-2);
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: var(--border-soft) solid transparent;
+  cursor: pointer;
+}
+
+.map-stop.is-selected .map-stop-button { border-color: var(--gold); }
+.map-stop.is-completed .map-stop-button { border-color: transparent; }
+
+.map-island { width: 100px; height: 65px; }
+
+/* The quest the kid is on now: just their ship sailing there (no island) */
+.map-ship {
+  width: 72px;
+  height: 72px;
+  animation: ship-bob 2.4s ease-in-out infinite;
+}
+
+.map-sparkle {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-3);
+  animation: twinkle 1.2s ease-in-out infinite alternate;
+}
+
+/* The little card under each island */
+.map-label {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  min-width: 140px;
+  margin-top: var(--space-1);
+  padding: var(--space-1) var(--space-2) var(--space-2);
+  color: var(--on-accent);
+  background: var(--parchment);
+  border: var(--border-thin) solid var(--pixel-edge);
+  box-shadow: 3px 3px 0 var(--pixel-edge);
+}
+
+.map-stop.is-locked .map-label { background: var(--stone); }
+
+.map-label-number { font: var(--text-tag); color: var(--ink-dim); }
+.map-label-title { font: var(--text-small); }
+
+.map-chip {
+  padding: 0 var(--space-2);
+  font: var(--text-small);
+  font-size: 12px;
+  color: var(--on-accent);
+  border: var(--border-thin) solid var(--pixel-edge);
+}
+
+.map-chip.is-done { background: var(--gold); }
+.map-chip.is-today { background: var(--status-green); }
+.map-chip.is-locked { background: var(--stone-light); }
+
+.map-stop.is-ithaca .map-stop-button { cursor: default; }
+
+.map-ithaca-label {
+  margin-top: var(--space-1);
+  padding: 0 var(--space-2);
+  font: var(--text-tag);
+  text-transform: uppercase;
+  color: var(--ithaca);
+  background: var(--sea-bottom);
+  border: var(--border-thin) solid var(--ithaca);
+}
+
+/* Right column */
+/* Starts level with the map (Athena peeks up into the space above the card);
+   the logbook stretches so both columns end together. */
+.home-side {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: var(--space-4);
+}
+
+.home-quest {
+  position: relative;
+  display: grid;
+  gap: var(--space-2);
+  justify-items: start;
+  padding: var(--space-4);
+  background: var(--parchment);
+  color: var(--on-accent);
+  border: var(--border-soft) solid var(--wood-frame);
+  box-shadow: inset 0 0 0 var(--border-thin) var(--wood-light), 6px 6px 0 var(--wood-frame);
+}
+
+.home-quest .tag-label { color: var(--ink-dim); }
+
+/* The quest card and log in card sit in a wrapper that holds the peeking owl */
+.peek-wrap { position: relative; display: grid; }
+
+/* Athena peeks over the top edge of the card */
+.peek-owl {
+  position: absolute;
+  top: -50px;
+  right: var(--space-4);
+  width: 56px;
+  height: 56px;
+  transform-origin: 50% 100%;
+  animation: owl-float 3s ease-in-out infinite;
+}
+
+.skill-chip {
+  padding: 0 var(--space-2);
+  font: var(--text-small);
+  border: var(--border-thin) solid var(--border);
+}
+
+.home-quest .set-sail {
+  justify-self: stretch;
+  margin-top: var(--space-2);
+  text-align: center;
+  text-decoration: none;
+}
+
+.locked-note {
+  margin: 0;
+  font: var(--text-body);
+  font-weight: 800;
+  color: var(--ink-dim);
+}
+
+.logbook {
+  padding: var(--space-4);
+  background: var(--panel);
+  border: var(--border-soft) solid var(--frame);
+  box-shadow: var(--shadow-pixel);
+}
+
+.logbook-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: var(--space-2);
+}
+
+.logbook-stat {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-2);
+  background: var(--parchment);
+  border: var(--border-thin) solid var(--wood-light);
+}
+
+.logbook-stat strong { font: var(--text-title); color: var(--heading); }
+.logbook-stat span { font: var(--text-small); color: var(--ink-dim); }
+
+/* Narrow screens: the map becomes a list going down, with the route as a dashed line */
+@media (max-width: 760px) {
+  .map-sea { height: auto; padding: var(--space-6) var(--space-3) var(--space-4); }
+  .map-route, .map-wave { display: none; }
+
+  .map-stops {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: var(--space-5);
+  }
+
+  .map-stops::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    border-left: 4px dashed var(--stone-light);
+  }
+
+  .map-stop { position: relative; left: auto; top: auto; transform: none; }
+  .voyage-ship { display: none; }
+  .map-island.is-placeholder { visibility: visible; content: url("/pixel/ship-green.svg"); width: 65px; }
+  .home-top-right .room-chip { display: none; }
+}
+
+/* ---------- Log in page: a night sea ---------- */
+.login-page {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: var(--insight-ink);
+  background:
+    radial-gradient(circle at 18% 30%, var(--insight-ink) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 26% 12%, var(--gold) 0 1.5px, transparent 2px),
+    radial-gradient(circle at 44% 26%, var(--insight-ink) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 52% 8%, var(--insight-ink) 0 1.5px, transparent 2px),
+    radial-gradient(circle at 63% 34%, var(--insight-ink) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 74% 16%, var(--gold) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 92% 28%, var(--insight-ink) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 8% 52%, var(--insight-ink) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 34% 48%, var(--insight-ink) 0 1px, transparent 1.5px),
+    linear-gradient(to bottom, var(--sea-bottom), var(--insight-bg));
+}
+
+.login-sky { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+
+.login-moon { position: absolute; top: 9%; left: 6%; width: 64px; height: 64px; }
+
+.login-cloud {
+  position: absolute;
+  top: 19%;
+  left: 24%;
+  width: 80px;
+  height: 24px;
+  animation: cloud-drift 40s linear infinite alternate;
+}
+
+@keyframes cloud-drift {
+  from { transform: translateX(0); }
+  to { transform: translateX(120px); }
+}
+
+.login-twinkle { position: absolute; animation: twinkle 1.6s ease-in-out infinite alternate; }
+
+.login-main {
+  flex: 1;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-6) clamp(var(--space-3), 4vw, var(--space-6)) var(--space-5);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 400px);
+  align-items: center;
+  gap: var(--space-6);
+}
+
+@media (max-width: 800px) {
+  .login-main { grid-template-columns: minmax(0, 1fr); gap: var(--space-5); }
+}
+
+/* Left: logo, wordmark, tagline */
+.login-brand {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+  text-align: center;
+}
+
+.login-mark { width: clamp(96px, 12vw, 132px); height: auto; }
+
+.login-word {
+  margin: 0;
+  font: var(--text-display);
+  font-size: clamp(48px, 7vw, 80px);
+  line-height: 1;
+  color: var(--insight-ink);
+}
+
+.login-word span { color: var(--gold); }
+
+.login-tagline {
+  max-width: 360px;
+  margin: 0;
+  font: var(--text-body-lg);
+  font-size: 20px;
+  line-height: 30px;
+}
+
+/* Right: the card */
+.login-card {
+  position: relative;
+  display: grid;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  color: var(--on-accent);
+  background: var(--parchment);
+  --frame-ink: var(--wood-frame);
+  --card-shadow: var(--pixel-edge);
+}
+
+.peek-wrap .peek-owl { z-index: 6; }
+
+.role-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin-bottom: var(--space-2);
+  border: var(--border-thin) solid var(--border);
+}
+
+.role-tab {
+  display: grid;
+  gap: 2px;
+  padding: var(--space-2);
+  font: inherit;
+  color: var(--ink);
+  background: var(--panel);
+  border: none;
+  cursor: pointer;
+}
+
+.role-tab + .role-tab { border-left: var(--border-thin) solid var(--border); }
+
+.role-tab.is-active { color: var(--gold); background: var(--sea-bottom); }
+
+.role-tab-title { font: var(--text-tag); }
+.role-tab-sub { font: var(--text-small); font-size: 12px; color: inherit; opacity: 0.8; }
+
+.login-label {
+  margin-top: var(--space-2);
+  font: var(--text-small);
+  color: var(--ink);
+}
+
+.login-input {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  font: var(--text-code);
+  letter-spacing: 1px;
+  color: var(--ink);
+  background: var(--panel);
+  border: var(--border-thin) solid var(--border);
+}
+
+.login-input.is-reading { font: var(--text-body); letter-spacing: 0; }
+.login-input::placeholder { color: var(--ink-dim); opacity: 0.7; }
+
+/* Secret pictures: six small tiles; the chosen one turns gold */
+.picture-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.picture-choice {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  padding: var(--space-1);
+  background: var(--panel);
+  border: var(--border-thin) solid var(--wood-light);
+  cursor: pointer;
+}
+
+.picture-choice img { width: 28px; height: 28px; }
+.picture-choice:hover { border-color: var(--border); }
+.picture-choice.is-picked { background: var(--gold); border-color: var(--pixel-edge); }
+
+.login-message {
+  min-height: 20px;
+  margin: 0;
+  font: var(--text-small);
+  color: var(--alert-edge);
+}
+
+.login-submit { width: 100%; }
+
+.login-help {
+  margin: 0;
+  font: var(--text-small);
+  font-size: 13px;
+  text-align: center;
+  color: var(--ink-dim);
+}
+
+/* The sea along the bottom */
+.login-sea {
+  position: relative;
+  height: clamp(150px, 24vh, 220px);
+  background: linear-gradient(to bottom, var(--sea-top), var(--sea-bottom));
+  pointer-events: none;
+}
+
+.login-ithaca {
+  position: absolute;
+  right: 6%;
+  bottom: 52%;
+  display: flex;
+  align-items: flex-end;
+}
+
+.login-lighthouse {
+  position: relative;
+  z-index: 1;
+  width: 32px;
+  height: 88px;
+  margin-right: -44px;
+  margin-bottom: 26px;
+}
+
+/* A soft light beam from the lighthouse lamp, sweeping left and right */
+.lighthouse-beam {
+  position: absolute;
+  left: -150px;
+  bottom: 96px;
+  width: 170px;
+  height: 40px;
+  background: linear-gradient(to left, color-mix(in srgb, var(--gold) 45%, transparent), transparent);
+  clip-path: polygon(100% 45%, 0 0, 0 100%, 100% 55%);
+  transform-origin: 100% 50%;
+  animation: beam-sweep 6s ease-in-out infinite alternate;
+}
+
+@keyframes beam-sweep {
+  from { transform: rotate(-8deg); }
+  to { transform: rotate(8deg); }
+}
+
+/* Odysseus sails gently back and forth near the bottom */
+.login-hero {
+  position: absolute;
+  left: 40%;
+  bottom: 4%;
+  width: 130px;
+  height: 110px;
+  animation: hero-sail 14s ease-in-out infinite alternate, ship-bob 2.6s ease-in-out infinite;
+}
+
+@keyframes hero-sail {
+  from { left: 34%; }
+  to { left: 48%; }
+}
+
+/* ---------- Teacher dashboard ---------- */
+.teacher-bar { align-items: center; flex-wrap: wrap; }
+
+.class-label {
+  display: grid;
+  padding-left: var(--space-4);
+  border-left: var(--border-thin) solid var(--wood-light);
+}
+
+.class-kicker {
+  font: var(--text-small);
+  color: var(--ink-dim);
+}
+
+/* Teacher button: navy initials square, name and a little arrow */
+.teacher-profile { font: var(--text-body); font-weight: 800; }
+
+.initials-avatar {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  font: var(--text-tag);
+  color: var(--gold);
+  background: var(--sea-bottom);
+  border: var(--border-thin) solid var(--pixel-edge);
+}
+
+.initials-avatar.is-big { width: 64px; height: 64px; font: var(--text-title); }
+
+.class-name { font: var(--text-body-lg); }
+
+.teacher-summary {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* Count chips: icon + word + number on the status color */
+.count-chip,
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  font: var(--text-small);
+  color: var(--on-accent);
+  border: var(--border-thin) solid var(--pixel-edge);
+  white-space: nowrap;
+}
+
+.count-chip strong { margin-left: var(--space-1); }
+
+.is-red.count-chip, .is-red.status-badge { background: var(--status-red); }
+.is-yellow.count-chip, .is-yellow.status-badge { background: var(--status-yellow); }
+.is-green.count-chip, .is-green.status-badge { background: var(--status-green); }
+.is-ithaca.count-chip, .is-ithaca.status-badge { background: var(--ithaca); }
+
+.updated {
+  margin-left: var(--space-2);
+  font: var(--text-small);
+  color: var(--ink-dim);
+}
+
+/* Help queue left, Tiresias + whole class right */
+.teacher-main {
+  flex: 1;
+  width: 100%;
+  padding: var(--space-4) clamp(var(--space-3), 4vw, var(--space-6)) var(--space-4);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+  align-content: start;
+}
+
+@media (min-width: 960px) {
+  .teacher-main { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+}
+
+.teacher-side { display: grid; gap: var(--space-4); }
+
+.section-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.section-title {
+  margin: 0;
+  font: var(--text-title);
+  color: var(--heading);
+}
+
+.section-note {
+  font: var(--text-small);
+  color: var(--ink-dim);
+}
+
+/* The help queue: parchment in a wooden frame, like the quest banner */
+.help-queue {
+  padding: var(--space-4);
+  background: var(--parchment);
+  color: var(--on-accent);
+  border: var(--border-thin) solid var(--wood-light);
+  border-radius: var(--radius-panel);
+  min-height: 320px;
+}
+
+/* Filter tabs: All, Needs you, Getting hints, Sailing, At Ithaca (with counts) */
+.queue-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  margin-bottom: var(--space-3);
+  border-bottom: var(--border-thin) solid var(--wood-light);
+}
+
+.queue-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-1);
+  margin-bottom: calc(-1 * var(--border-thin));
+  font: var(--text-small);
+  color: var(--ink);
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+}
+
+.queue-tab .status-square { width: 14px; height: 14px; }
+.queue-tab-count { color: var(--ink-dim); }
+.queue-tab:hover { color: var(--heading); }
+.queue-tab.is-active { border-bottom-color: var(--heading); }
+.queue-tab.is-active .queue-tab-count { color: var(--ink); }
+
+.queue-empty {
+  margin: var(--space-5) 0;
+  font: var(--text-body-lg);
+  text-align: center;
+}
+
+.queue-list {
+  list-style: none;
+  margin: 0;
+  padding: 0 var(--space-2) var(--space-2) 0;
+  max-height: clamp(260px, calc(100vh - 320px), 720px);
+  overflow-y: auto;
+  scrollbar-color: var(--wood-light) transparent;
+  display: grid;
+  gap: var(--space-3);
+}
+
+.queue-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--panel);
+  border: var(--border-thin) solid var(--wood-light);
+}
+
+/* Red cards: the ship gently blinks so the teacher's eye goes there first */
+.queue-card.is-red img { animation: blink 1.2s steps(2) infinite; }
+
+.queue-card.is-red {
+  background: var(--alert-tint);
+  border-color: var(--alert-edge);
+}
+
+.queue-name-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.queue-name {
+  font: var(--text-label);
+  color: var(--heading);
+}
+
+/* Calm view: only the red badge blinks */
+.queue-card.is-red .status-badge { animation: blink 1.2s steps(2) infinite; }
+
+@keyframes blink {
+  50% { opacity: 0.45; }
+}
+
+.queue-reason {
+  margin: 2px 0;
+  font: var(--text-small);
+}
+
+.queue-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font: var(--text-small);
+  color: var(--ink-dim);
+}
+
+.mini-pips { display: inline-flex; gap: 2px; }
+
+.mini-pip {
+  width: 12px;
+  height: 12px;
+  border: var(--border-thin) solid var(--pixel-edge);
+}
+
+.mini-pip.is-on { background: var(--pixel-edge); }
+
+/* Tiresias: a navy panel with a gold frame */
+.tiresias {
+  padding: var(--space-4);
+  background: var(--insight-bg);
+  color: var(--insight-ink);
+  border: var(--border-soft) solid var(--gold);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-pixel);
+}
+
+.tiresias-heading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+
+/* The seeing eye glows softly, like a vision */
+.tiresias-eye {
+  width: 60px;
+  height: 40px;
+  animation: eye-glow 3s ease-in-out infinite;
+}
+
+@keyframes eye-glow {
+  0%, 100% { filter: drop-shadow(0 0 0 transparent); }
+  50% { filter: drop-shadow(0 0 6px var(--gold)); }
+}
+
+.tiresias-lead {
+  margin: 0 0 var(--space-1);
+  font: var(--text-body);
+  font-style: italic;
+  opacity: 0.85;
+}
+
+.tiresias-title {
+  margin: 0;
+  font: var(--text-tag);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--gold);
+}
+
+.tiresias-tip {
+  margin: 0 0 var(--space-3);
+  font: var(--text-body-lg);
+}
+
+/* One bar per concept: how many students are stuck on it */
+.concept-bars {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+
+.concept-row {
+  display: grid;
+  grid-template-columns: minmax(96px, 30%) minmax(0, 1fr) 2ch;
+  align-items: center;
+  gap: var(--space-3);
+  font: var(--text-small);
+}
+
+.concept-track {
+  height: var(--space-3);
+  border: var(--border-thin) solid var(--frame);
+}
+
+.concept-fill {
+  display: block;
+  height: 100%;
+  background: var(--gold);
+  transition: width 400ms ease-out;
+}
+
+.concept-count { text-align: right; }
+
+/* Whole class */
+.whole-class {
+  padding: var(--space-4);
+  background: var(--panel);
+  border: var(--border-soft) solid var(--frame);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-pixel);
+}
+
+/* One bar split by status, with a 2px gap between the parts */
+.class-bar {
+  display: flex;
+  gap: 2px;
+  height: var(--space-4);
+  margin-bottom: var(--space-3);
+  padding: 2px;
+  background: var(--panel);
+  border: var(--border-thin) solid var(--pixel-edge);
+}
+
+.class-bar-part { flex-basis: 0; transition: flex-grow 400ms ease-out; }
+.class-bar-part.is-red { background: var(--status-red); }
+.class-bar-part.is-yellow { background: var(--status-yellow); }
+.class-bar-part.is-green { background: var(--status-green); }
+.class-bar-part.is-ithaca { background: var(--ithaca); }
+
+.ship-grid {
+  list-style: none;
+  margin: 0;
+  padding: var(--space-3);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: var(--space-3);
+  background: var(--stone-light);
+  border: var(--border-thin) solid var(--frame);
+}
+
+.ship-cell {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-1);
+}
+
+.ship-cell img { animation: ship-bob 3s ease-in-out infinite; }
+.ship-cell img.is-alert { animation: ship-bob 3s ease-in-out infinite, blink 1.2s steps(2) infinite; }
+
+.ship-name {
+  font: var(--text-tag);
+  color: var(--heading);
+}
+
+.class-stats {
+  margin: var(--space-3) 0 0;
+  font: var(--text-small);
+  color: var(--ink-dim);
+}
+
+@media (max-width: 600px) {
+  .queue-card { grid-template-columns: auto minmax(0, 1fr); }
+  .queue-card .stone-button { grid-column: 1 / -1; }
+  .class-label { padding-left: 0; border-left: none; }
+}
+
+/* ---------- Teacher home: classes, class banner, today's voyage, quest library ---------- */
+.th-main {
+  flex: 1;
+  width: 100%;
+  padding: var(--space-3) clamp(var(--space-3), 4vw, var(--space-6)) var(--space-4);
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: clamp(220px, 20vw, 280px) minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-areas:
+    "classes banner  banner"
+    "classes voyage  library";
+  align-items: start;
+}
+
+.th-classes { grid-area: classes; display: grid; gap: var(--space-3); }
+.class-banner { grid-area: banner; }
+.th-voyage { grid-area: voyage; }
+.th-library { grid-area: library; }
+
+@media (max-width: 1100px) {
+  .th-main {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      "banner  banner"
+      "classes classes"
+      "voyage  library";
+  }
+  .night-scene { display: none; }
+}
+
+@media (max-width: 760px) {
+  .th-main {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "banner" "classes" "voyage" "library";
+  }
+}
+
+/* Wide screens: the page is exactly one screen tall. The panels fill the height,
+   the voyage and library lists scroll inside, and the night sea sits at the bottom left. */
+@media (min-width: 1101px) {
+  .teacher-home { height: 100vh; overflow: hidden; }
+  .teacher-home .th-main {
+    min-height: 0;
+    grid-template-rows: auto minmax(0, 1fr);
+    align-items: stretch;
+  }
+  .teacher-home .th-classes {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    min-height: 0;
+  }
+  .teacher-home .night-scene { margin-top: auto; flex-shrink: 0; }
+  .teacher-home .th-voyage,
+  .teacher-home .th-library { min-height: 0; height: 100%; }
+  .teacher-home .voyage-list { overflow-y: auto; min-height: 0; padding-right: var(--space-1); }
+  .teacher-home .library-list { flex: 1; min-height: 0; max-height: none; }
+  .teacher-home .voyage-footer { margin-top: var(--space-3); }
+}
+
+/* Class list */
+.class-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+
+.class-card {
+  width: 100%;
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  text-align: left;
+  font: inherit;
+  color: var(--on-accent);
+  background: var(--parchment);
+  border: var(--border-soft) solid var(--wood-light);
+  cursor: pointer;
+}
+
+.class-card:hover { border-color: var(--wood-frame); }
+
+.class-card.is-selected {
+  background: var(--panel);
+}
+
+.class-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.class-card-name { font: var(--text-label); color: var(--heading); }
+.class-card-meta { font: var(--text-small); color: var(--ink-dim); }
+
+.live-chip,
+.mini-chip {
+  padding: 0 var(--space-2);
+  font: var(--text-small);
+  font-size: 12px;
+  color: var(--on-accent);
+  border: var(--border-thin) solid var(--pixel-edge);
+  white-space: nowrap;
+}
+
+.live-chip { background: var(--status-green); }
+.mini-chip.is-red { background: var(--status-red); }
+.mini-chip.is-yellow { background: var(--status-yellow); }
+
+.class-card-chips { display: flex; flex-wrap: wrap; gap: var(--space-1); }
+
+.new-class {
+  padding: var(--space-3);
+  font: var(--text-label);
+  color: var(--heading);
+  background: transparent;
+  border: var(--border-thin) dashed var(--border);
+  cursor: pointer;
+}
+
+.new-class:hover { background: var(--panel); }
+
+.th-note { margin: 0; font: var(--text-small); color: var(--ink-dim); }
+
+/* A small night sea with the moon and a ship */
+.night-scene {
+  position: relative;
+  height: 140px;
+  margin-top: var(--space-3);
+  overflow: hidden;
+  background: linear-gradient(to bottom, var(--sea-bottom), var(--sea-top));
+  border: var(--border-soft) solid var(--wood-frame);
+}
+
+.night-moon { position: absolute; top: 10px; right: 16px; width: 40px; height: 40px; }
+
+.night-ship {
+  position: absolute;
+  left: 45%;
+  bottom: 18px;
+  width: 40px;
+  height: 40px;
+  animation: ship-bob 3s ease-in-out infinite;
+}
+
+/* Starry banner for the chosen class */
+.class-banner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  color: var(--insight-ink);
+  background:
+    radial-gradient(circle at 22% 30%, var(--insight-ink) 0 1.5px, transparent 2px),
+    radial-gradient(circle at 38% 70%, var(--insight-ink) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 47% 22%, var(--gold) 0 1.5px, transparent 2px),
+    radial-gradient(circle at 63% 60%, var(--insight-ink) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 72% 18%, var(--insight-ink) 0 1.5px, transparent 2px),
+    var(--insight-bg);
+  border: var(--border-soft) solid var(--wood-frame);
+  box-shadow: 6px 6px 0 var(--wood-frame);
+}
+
+.banner-title { margin: 0; font: var(--text-display); font-size: clamp(32px, 3.5vw, 44px); }
+.banner-meta { margin: 0; font: var(--text-body); }
+
+.banner-moon { width: 48px; height: 48px; margin-left: auto; }
+
+.banner-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.class-code {
+  display: grid;
+  justify-items: center;
+  padding: var(--space-1) var(--space-3);
+  border: var(--border-soft) solid var(--gold);
+}
+
+.class-code-label { font: var(--text-tag); font-size: 14px; text-transform: uppercase; color: var(--insight-ink); }
+.class-code-value { font: var(--text-title); color: var(--gold); letter-spacing: 2px; }
+
+.class-banner .stone-button { text-decoration: none; }
+
+/* Today's voyage */
+.th-voyage,
+.th-library {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-4);
+  color: var(--on-accent);
+}
+
+.th-voyage {
+  background: var(--parchment);
+  border: var(--border-soft) solid var(--wood-frame);
+  box-shadow: 6px 6px 0 var(--wood-frame);
+  min-height: clamp(300px, calc(100vh - 360px), 640px);
+}
+
+.voyage-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+
+.voyage-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--panel);
+  border: var(--border-thin) solid var(--wood-light);
+}
+
+.voyage-number {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  font: var(--text-label);
+  color: var(--gold);
+  background: var(--sea-bottom);
+}
+
+.voyage-text { display: grid; gap: 2px; min-width: 0; }
+.voyage-title { font: var(--text-body); font-weight: 800; }
+.voyage-skill { font: var(--text-small); color: var(--ink-dim); }
+
+.small-button {
+  padding: var(--space-1) var(--space-2);
+  font: var(--text-small);
+  color: var(--ink);
+  background: var(--parchment);
+  border: var(--border-thin) solid var(--border);
+  cursor: pointer;
+}
+
+.small-button:hover:not(:disabled) { background: var(--stone-light); }
+.small-button:disabled { opacity: 0.4; cursor: default; }
+
+.voyage-footer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: auto 0 0;
+  padding: var(--space-2) var(--space-3);
+  font: var(--text-small);
+  background: var(--panel);
+  border: var(--border-thin) solid var(--wood-light);
+}
+
+/* Quest library */
+.th-library {
+  background: var(--panel);
+  border: var(--border-soft) solid var(--frame);
+  box-shadow: var(--shadow-pixel);
+}
+
+.skill-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.skill-filter {
+  padding: var(--space-1) var(--space-2);
+  font: var(--text-small);
+  color: var(--ink);
+  background: var(--panel);
+  border: var(--border-thin) solid var(--border);
+  cursor: pointer;
+}
+
+.skill-filter.is-active { color: var(--insight-ink); background: var(--sea-bottom); }
+.skill-filter.is-active .skill-count { color: var(--gold); }
+.skill-count { color: var(--ink-dim); font-weight: 700; }
+
+/* The list scrolls; the title and filters stay put */
+.library-list {
+  max-height: clamp(260px, calc(100vh - 420px), 640px);
+  overflow-y: auto;
+  padding-right: var(--space-2);
+  scrollbar-color: var(--frame) transparent;
+}
+
+.library-group-title {
+  margin: var(--space-3) 0 var(--space-1);
+  padding-bottom: var(--space-1);
+  font: var(--text-label);
+  color: var(--heading);
+  border-bottom: var(--border-thin) solid var(--border);
+}
+
+.library-group:first-child .library-group-title { margin-top: 0; }
+
+.library-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--parchment-row);
+}
+
+.library-blurb { font: var(--text-small); color: var(--ink-dim); }
+
+.assign-button {
+  padding: var(--space-1) var(--space-3);
+  font: var(--text-small);
+  color: var(--ink);
+  background: var(--panel);
+  border: var(--border-thin) solid var(--border);
+  box-shadow: 3px 3px 0 var(--border);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.assign-button:hover { background: var(--stone-light); }
+.assign-button:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--border); }
+
+.assigned-chip {
+  padding: var(--space-1) var(--space-3);
+  font: var(--text-small);
+  color: var(--on-accent);
+  background: var(--status-green);
+  border: var(--border-thin) solid var(--pixel-edge);
+  white-space: nowrap;
 }
 
 /* ---------- Ithaca celebration ---------- */
@@ -666,3 +2159,102 @@ span.ide-tab { cursor: default; }
     transition: none !important;
   }
 }
+
+/* One "pixel" of the card frame, matched to WHOLE screen pixels at common Windows and
+   Mac zoom levels. A frame pixel that lands halfway through a screen pixel gets blended
+   into a grey-silver line, so at 125% it is 3 screen pixels (2.4px), not 2.5. */
+:root { --frame-u: 2px; }
+@media (resolution: 1.25dppx) { :root { --frame-u: 2.4px; } }   /* 3 screen pixels */
+@media (resolution: 1.75dppx) { :root { --frame-u: calc(4px / 1.75); } }  /* 4 screen pixels */
+@media (resolution: 2.25dppx) { :root { --frame-u: calc(4px / 2.25); } }  /* 4 screen pixels */
+@media (resolution: 2.5dppx) { :root { --frame-u: 2.4px; } }    /* 6 screen pixels */
+
+/* ---------- Pixel box frame: crisp stepped corners ----------
+   Built only from box shadows (plain rectangles), which the browser lines up exactly with
+   screen pixels, so there is no soft or silver edge at any zoom (125%, 150%...).
+   The card's fill is one of those shadows too, so fill and frame always line up.
+   Around each card, from the inside out:
+     1. a strip one pixel wide in the card's own color (--card-bg), corners left empty
+     2. the dark outline one pixel further out, corners left empty
+     3. one dark pixel in each corner, which makes the stair step
+   --u is one pixel of the frame. --frame-ink changes the outline color on a card. */
+.panel,
+.quest-banner,
+.ide,
+.athena-panel,
+.hint-card,
+.my-ship,
+.voyage-map,
+.home-quest,
+.logbook,
+.logbook-stat,
+.map-label,
+.help-queue,
+.queue-card,
+.tiresias,
+.whole-class,
+.class-card,
+.class-banner,
+.th-voyage,
+.th-library,
+.voyage-item,
+.night-scene,
+.login-card,
+.teacher-note,
+.profile-card,
+.celebration {
+  --u: var(--frame-u);
+  --ink: var(--frame-ink, var(--pixel-edge));
+  border: none;
+  clip-path: none;
+  box-shadow:
+    0 calc(-1 * var(--u)) 0 0 var(--card-bg),
+    0 var(--u) 0 0 var(--card-bg),
+    calc(-1 * var(--u)) 0 0 0 var(--card-bg),
+    var(--u) 0 0 0 var(--card-bg),
+    0 calc(-2 * var(--u)) 0 0 var(--ink),
+    0 calc(2 * var(--u)) 0 0 var(--ink),
+    calc(-2 * var(--u)) 0 0 0 var(--ink),
+    calc(2 * var(--u)) 0 0 0 var(--ink),
+    calc(-1 * var(--u)) calc(-1 * var(--u)) 0 0 var(--ink),
+    var(--u) calc(-1 * var(--u)) 0 0 var(--ink),
+    calc(-1 * var(--u)) var(--u) 0 0 var(--ink),
+    var(--u) var(--u) 0 0 var(--ink),
+    inset 0 0 0 100vmax var(--card-fill, var(--card-bg));
+}
+
+/* The card's fill is painted by the same shadows as its frame (the last, inset layer),
+   so the browser rounds both to the same screen pixels: no grey seam at 125% or 150%.
+   Cards with a picture background (stars, the night sea) keep their own background. */
+.class-banner,
+.night-scene { --card-fill: transparent; }
+
+/* Each card's own color, for the inner strip of its frame */
+.panel, .athena-panel, .my-ship, .logbook, .whole-class, .th-library, .voyage-item,
+.queue-card { --card-bg: var(--panel); }
+.quest-banner, .home-quest, .logbook-stat, .map-label, .help-queue, .class-card,
+.th-voyage, .login-card, .profile-card, .celebration { --card-bg: var(--parchment); }
+.ide { --card-bg: var(--editor-bar); }
+.voyage-map, .night-scene { --card-bg: var(--sea-bottom); }
+.tiresias, .class-banner { --card-bg: var(--insight-bg); }
+.teacher-note { --card-bg: var(--stone-light); }
+.hint-card.is-hint { --card-bg: var(--amber); }
+.hint-card.is-thinking, .hint-card.is-idle { --card-bg: var(--sail); }
+.hint-card.is-done { --card-bg: var(--status-green); }
+.queue-card.is-red { --card-bg: var(--alert-tint); }
+.class-card.is-selected { --card-bg: var(--panel); }
+.map-stop.is-locked .map-label { --card-bg: var(--stone); }
+
+/* Cards that keep a meaning in their outline color */
+.queue-card.is-red { --frame-ink: var(--alert-edge); }
+.class-card.is-selected { --frame-ink: var(--border); background: var(--panel); }
+.class-card:hover { --frame-ink: var(--wood-frame); }
+.celebration { --frame-ink: var(--gold); }
+
+/* Scrolling lists: room so the outlines and shadows of the cards inside aren't cut off */
+.queue-list,
+.voyage-list { padding: 9px 17px 17px 9px; }
+.queue-list,
+.voyage-list,
+.class-list { gap: var(--space-3); }
+.class-list { padding: 9px 17px 17px 9px; }

@@ -4,9 +4,9 @@
 // (the teacher sees red on the Sea Map).
 const KID_SHIPS = {
   green: { img: 'ship-green', word: 'Sailing', tone: 'is-green' },
-  yellow: { img: 'ship-yellow', word: 'Athena is helping', tone: 'is-yellow' },
-  red: { img: 'ship-yellow', word: 'Help is coming', tone: 'is-yellow' },
-  ithaca: { img: 'ship-ithaca', word: 'At Ithaca!', tone: 'is-ithaca' },
+  yellow: { img: 'ship-helping', word: 'Athena is helping', tone: 'is-yellow' },
+  red: { img: 'ship-helping', word: 'Help is coming', tone: 'is-yellow' },
+  ithaca: { img: 'ship-home', word: 'At Ithaca!', tone: 'is-ithaca' },
 }
 
 export default function MyShip({ status }) {

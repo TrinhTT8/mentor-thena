@@ -1,5 +1,6 @@
+import Logo from '../components/Logo.jsx'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useParams, useSearchParams } from 'react-router-dom'
+import { Link, useParams, useSearchParams } from 'react-router-dom'
 import CodeMirror from '@uiw/react-codemirror'
 import { python } from '@codemirror/lang-python'
 import OutputBox from '../components/OutputBox.jsx'
@@ -190,7 +191,10 @@ export default function StudentPage() {
   return (
     <div className="student-page">
       <header className="top-bar">
-        <p className="logo">MentorThena</p>
+        <div className="top-left">
+          <Logo />
+          <Link to={`/student/${encodeURIComponent(id)}`} className="back-link">← Voyage map</Link>
+        </div>
         <MyShip status={shipStatus} />
       </header>
 
@@ -212,7 +216,7 @@ export default function StudentPage() {
           <div className="ide-editor" onKeyDownCapture={handleKeyDownCapture}>
             <CodeMirror
               value={code}
-              height="clamp(280px, 46vh, 560px)"
+              height="clamp(220px, 38vh, 520px)"
               theme={EDITOR_THEME}
               extensions={editorExtensions}
               onChange={handleChange}
@@ -271,6 +275,7 @@ export default function StudentPage() {
           thinking={thinking}
           atIthaca={shipStatus === 'ithaca'}
           teacherComing={shipStatus === 'red'}
+          hasError={Boolean(result.error)}
         />
 
         {debug && <DebugLine peek={activity.peek} />}
@@ -278,8 +283,9 @@ export default function StudentPage() {
 
       <Celebration open={celebrate} onClose={() => setCelebrate(false)} />
 
-      {/* The waves along the bottom of the page */}
-      <div className="wave-border" aria-hidden="true" />
+      {/* The rocky shore along the bottom of the page */}
+      <div className="page-waves" aria-hidden="true" />
+      <div className="shore-border" aria-hidden="true" />
     </div>
   )
 }

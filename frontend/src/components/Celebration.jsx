@@ -34,7 +34,7 @@ export default function Celebration({ open, onClose }) {
             style={{ ...spot, animationDelay: `${i * 0.3}s` }}
           />
         ))}
-        <img src="/pixel/ship-ithaca.svg" alt="" width="160" height="160" className="celebration-ship pixel-art" />
+        <img src="/pixel/ship-home.svg" alt="" width="160" height="160" className="celebration-ship pixel-art" />
       </div>
       <h2 id="celebration-title" className="celebration-title">You reached Ithaca!</h2>
       <p className="celebration-text">Great sailing! Your code does exactly what the quest asked.</p>
