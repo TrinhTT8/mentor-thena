@@ -57,13 +57,20 @@ MINI_LESSONS = {
     "wrong output":
         "Put the expected output next to one student's output and ask "
         "the class to spot the difference.",
+    "getting started":
+        "Read the task out loud together and ask: what is the very first "
+        "line we need to write?",
+    "next step":
+        "Ask the class: what does our program show now, and what is "
+        "still missing from the answer?",
     "other":
         "Ask one student to read their code out loud, line by line, "
         "to the class.",
 }
 
-# Safety check: the ideas above must cover exactly the 13 concepts
-# in athena/prompts.py.
+# Safety check: the ideas above must cover exactly the concepts
+# in athena/prompts.py (15 since Person B added "getting started"
+# and "next step").
 assert set(MINI_LESSONS) == set(CONCEPTS), "MINI_LESSONS and CONCEPTS are out of sync"
 
 TIP_SYSTEM_PROMPT = """You are Tiresias, a wise helper for a teacher of children aged 8 to 10 who are learning Python.
