@@ -2,7 +2,7 @@ import Logo from '../components/Logo.jsx'
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import TeacherMenu from '../components/TeacherMenu.jsx'
-import { getInsight, getSeamap, resolveStudent } from '../api.js'
+import { getInsight, getSeamap } from '../api.js'
 import { hasQuests, loadVoyages, shipsReady } from '../voyageStore.js'
 
 // The teacher dashboard ("Captain's log"): who needs help first, Tiresias's class tip,
@@ -65,7 +65,6 @@ export default function TeacherPage() {
   const [updatedAt, setUpdatedAt] = useState(null)
   const [offline, setOffline] = useState(false)
   const [now, setNow] = useState(() => Date.now())
-  const [helping, setHelping] = useState(null) // id of the ship being marked helped
   const [filter, setFilter] = useState('all') // queue tab: 'all' or a status
 
   // The Sea Map and the Tiresias tip load side by side. The Sea Map shows as soon as
@@ -102,18 +101,6 @@ export default function TeacherPage() {
     const clock = setInterval(() => setNow(Date.now()), 1000)
     return () => { clearTimeout(first); clearInterval(poll); clearInterval(clock) }
   }, [refresh])
-
-  async function markHelped(studentId) {
-    setHelping(studentId)
-    try {
-      await resolveStudent(studentId)
-      await refresh()
-    } catch (err) {
-      console.warn('Mark helped failed', err)
-    } finally {
-      setHelping(null)
-    }
-  }
 
   // DEMO: with no quest assigned (on the teacher home, in this browser) nobody is sailing
   // yet, so the Sea Map stays empty. It fills in 15 s after the teacher assigns a quest.
@@ -203,16 +190,6 @@ export default function TeacherPage() {
                         </div>
                       )}
                     </div>
-                    {stuck && (
-                      <button
-                        type="button"
-                        className="stone-button is-small"
-                        onClick={() => markHelped(s.id)}
-                        disabled={helping === s.id}
-                      >
-                        {helping === s.id ? 'Saving...' : 'Mark helped'}
-                      </button>
-                    )}
                   </li>
                 )
               })}
