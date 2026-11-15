@@ -3,11 +3,11 @@
 These functions only look at numbers and text. They never read or
 write MongoDB. The snapshot route in app.py saves what they return.
 
-The 4 cues:
-- same_error:   the same error on 3 runs in a row
-- wrong_output: the code runs, but the output is wrong 3 runs in a row
-- idle:         no key press AND no cursor move for 60 seconds
-- churn:        typing and deleting a lot over the last 3 heartbeats
+The 4 cues (the numbers live in config.STUCK_RULES):
+- same_error:   the same error on 1 run
+- wrong_output: the code runs, but the output is wrong on 1 run
+- idle:         no key press AND no cursor move for 12 seconds
+- churn:        typing and deleting a lot over the last 2 heartbeats (20 s)
 """
 
 from datetime import timezone
@@ -16,8 +16,36 @@ import config
 
 RULES = config.STUCK_RULES
 
-# How many heartbeats make up the churn window (30 s / 10 s = 3).
+# How many heartbeats make up the churn window (20 s / 10 s = 2).
 CHURN_HEARTBEATS = RULES["churn_window_seconds"] // config.HEARTBEAT_SECONDS
+
+
+def cue_reasons():
+    """Return the short stuck reason the teacher sees for each cue.
+
+    The numbers come from config.STUCK_RULES, so the text always
+    matches the real rules.
+    """
+    idle_text = f"No typing for {RULES['idle_seconds']} seconds"
+
+    error_runs = RULES["same_error_runs"]
+    if error_runs == 1:
+        same_error_text = "Got an error on Run"
+    else:
+        same_error_text = f"Same error {error_runs} runs in a row"
+
+    wrong_runs = RULES["wrong_output_runs"]
+    if wrong_runs == 1:
+        wrong_output_text = "Output is not right yet"
+    else:
+        wrong_output_text = f"Output is wrong {wrong_runs} runs in a row"
+
+    return {
+        "idle": idle_text,
+        "churn": "Typing and deleting a lot",
+        "same_error": same_error_text,
+        "wrong_output": wrong_output_text,
+    }
 
 
 def clean_output(text):
@@ -124,10 +152,10 @@ def is_idle(activity):
 
 
 def is_churning(recent_activity):
-    """True when the student types and deletes a lot (last 3 heartbeats).
+    """True when the student types and deletes a lot (last 2 heartbeats).
 
     Stuck when deleted / typed is 0.7 or more,
-    and typed + deleted is at least 20 keys.
+    and typed + deleted is at least 12 keys.
     """
     total_typed = 0
     total_deleted = 0
@@ -159,7 +187,10 @@ def find_heartbeat_cue(activity, recent_activity):
 
 
 def in_cooldown(student, now):
-    """True when the student got a hint less than 45 seconds ago."""
+    """True when the student got a hint less than the cooldown ago.
+
+    The cooldown is in config.STUCK_RULES (20 seconds).
+    """
     last_hint_at = student.get("last_hint_at")
     if last_hint_at is None:
         return False

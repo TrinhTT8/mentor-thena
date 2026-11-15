@@ -2,7 +2,7 @@
 
 Run it with:  python seed_demo.py
 Re-running it is how we reset class c1 before a demo.
-It seeds class c1, 3 tasks, and 8 students, then keeps changing
+It seeds class c1, 4 tasks, and 8 students, then keeps changing
 the bot students (s2 to s8) every few seconds until you press Ctrl+C.
 s1 is the live student and is never touched by the simulator.
 """
@@ -11,6 +11,7 @@ import random
 import time
 from datetime import datetime, timezone
 
+from argus import watcher
 from db import students, tasks, snapshots, hints, classes
 
 CLASS_ID = "c1"
@@ -38,12 +39,8 @@ CONCEPTS = [
 ]
 
 # Short stuck reason the teacher sees for each Argus cue.
-CUE_REASONS = {
-    "idle": "No typing for 60 seconds",
-    "churn": "Typing and deleting a lot",
-    "same_error": "Same error 3 times",
-    "wrong_output": "Output is wrong 3 times",
-}
+# Built from config.STUCK_RULES, so it always matches the real rules.
+CUE_REASONS = watcher.cue_reasons()
 
 # The demo quests. Each one shows a different demo bug.
 # Sent to the browser: title, instructions, example (see seamap/dashboard.py).
