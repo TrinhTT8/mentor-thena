@@ -279,7 +279,7 @@ body {
 /* ---------- Quest banner ---------- */
 .quest-banner {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
+  grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
   gap: var(--space-4);
   padding: var(--space-3) var(--space-4);
@@ -334,25 +334,7 @@ body {
 .quest-status.is-in-progress { background: var(--amber); }
 .quest-status.is-completed { background: var(--status-green); }
 
-/* The teacher's example, on the right */
-.quest-example {
-  display: grid;
-  gap: var(--space-1);
-  justify-items: start;
-}
-
-.quest-example pre {
-  margin: 0;
-  padding: var(--space-2) var(--space-3);
-  background: var(--editor-bg);
-  color: var(--editor-ink);
-  font: var(--text-code);
-  white-space: pre-wrap;
-}
-
 @media (max-width: 700px) {
-  .quest-banner { grid-template-columns: auto minmax(0, 1fr); }
-  .quest-example { grid-column: 1 / -1; }
   .quest-icon { width: 40px; height: 40px; }
 }
 
@@ -475,6 +457,21 @@ span.ide-tab { cursor: default; }
 
 .goal-box p { margin: 0 0 var(--space-3); font: var(--text-body-lg); }
 .goal-box pre { margin: 0; font: var(--text-code); }
+
+/* Goal tab: the teacher's sample runs, one per line ("if age is 9 → Big kid") */
+.goal-samples {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font: var(--text-body-lg);
+}
+
+.goal-sample::before { content: "•"; margin-right: var(--space-2); color: var(--editor-dim); }
+.goal-arrow { margin: 0 var(--space-2); color: var(--editor-dim); }
+.goal-output { font: var(--text-code); }
+.goal-output.is-nothing { color: var(--editor-dim); font: var(--text-body-lg); font-style: italic; }
 
 /* ---------- Athena panel ---------- */
 .athena-panel {
@@ -729,6 +726,15 @@ span.ide-tab { cursor: default; }
   display: flex;
   align-items: center;
   flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+}
+
+/* Coding page: "← Voyage map" sits just left of the kid's ship status */
+.top-right {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: var(--space-2) var(--space-4);
 }
 
@@ -1098,10 +1104,12 @@ span.ide-tab { cursor: default; }
   box-shadow: var(--shadow-pixel);
 }
 
+/* Room between and around the boxes, so their pixel frames don't touch */
 .logbook-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
-  gap: var(--space-2);
+  gap: var(--space-4);
+  padding: var(--space-2) var(--space-1) var(--space-1);
 }
 
 .logbook-stat {
@@ -1452,7 +1460,8 @@ span.ide-tab { cursor: default; }
 .teacher-main {
   flex: 1;
   width: 100%;
-  padding: var(--space-4) clamp(var(--space-3), 4vw, var(--space-6)) var(--space-4);
+  /* More room on top, so the cards sit apart from the header */
+  padding: var(--space-6) clamp(var(--space-3), 4vw, var(--space-6)) var(--space-4);
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--space-4);
@@ -1841,7 +1850,6 @@ span.ide-tab { cursor: default; }
 .class-card-name { font: var(--text-label); color: var(--heading); }
 .class-card-meta { font: var(--text-small); color: var(--ink-dim); }
 
-.live-chip,
 .mini-chip {
   padding: 0 var(--space-2);
   font: var(--text-small);
@@ -1851,7 +1859,6 @@ span.ide-tab { cursor: default; }
   white-space: nowrap;
 }
 
-.live-chip { background: var(--status-green); }
 .mini-chip.is-red { background: var(--status-red); }
 .mini-chip.is-yellow { background: var(--status-yellow); }
 

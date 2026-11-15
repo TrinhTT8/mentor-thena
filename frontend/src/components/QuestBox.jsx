@@ -1,9 +1,5 @@
-// The quest banner across the top: scroll icon, title, instructions, a progress badge,
-// and (on the right) the teacher's example when the task has one.
-//
-// task comes from GET /api/task: { task_id, title, instructions } plus one OPTIONAL field
-// the server does not send yet:
-//   example: a teacher-written example. NEVER the expected output (that stays on the server).
+// The quest banner across the top: scroll icon, title, instructions and a progress badge.
+// task comes from GET /api/task: { task_id, title, instructions }.
 
 const PROGRESS_LABELS = {
   'not-started': 'Not started',
@@ -32,13 +28,6 @@ export default function QuestBox({ task, progress }) {
         </div>
         {task && <p className="quest-description">{withCodeChips(task.instructions)}</p>}
       </div>
-
-      {task?.example && (
-        <div className="quest-example">
-          <span className="tag-label">Example</span>
-          <pre>{task.example}</pre>
-        </div>
-      )}
     </section>
   )
 }

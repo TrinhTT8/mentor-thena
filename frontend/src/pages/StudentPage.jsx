@@ -193,9 +193,11 @@ export default function StudentPage() {
       <header className="top-bar">
         <div className="top-left">
           <Logo />
-          <Link to={`/student/${encodeURIComponent(id)}`} className="back-link">← Voyage map</Link>
         </div>
-        <MyShip status={shipStatus} />
+        <div className="top-right">
+          <Link to={`/student/${encodeURIComponent(id)}`} className="back-link">← Voyage map</Link>
+          <MyShip status={shipStatus} />
+        </div>
       </header>
 
       <main className="student-main">
@@ -264,7 +266,21 @@ export default function StudentPage() {
           ) : (
             <div className="goal-box">
               <p>{task ? task.instructions : 'Loading your quest...'}</p>
-              {task?.example && <pre>{task.example}</pre>}
+              {/* The teacher's sample runs (GET /api/task "samples"):
+                  [{ when: "age is 9", output: "Big kid" }, ...]; output "" = prints nothing */}
+              {task?.samples?.length > 0 && (
+                <ul className="goal-samples" aria-label="Sample runs">
+                  {task.samples.map((s) => (
+                    <li key={s.when} className="goal-sample">
+                      <span>if {s.when}</span>
+                      <span className="goal-arrow" aria-label="prints">→</span>
+                      {s.output
+                        ? <code className="goal-output">{s.output}</code>
+                        : <span className="goal-output is-nothing">Nothing</span>}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           )}
         </section>

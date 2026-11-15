@@ -68,7 +68,10 @@ export default function HomePage() {
 
       <main className="home-main">
         <div className="greeting">
-          <h1 className="greeting-title">Ahoy, {voyage?.studentName ?? 'sailor'}!</h1>
+          {/* "Ahoy, Maya!" once the name arrives; until then (or if it never does) say so */}
+          <h1 className="greeting-title">
+            {voyage?.studentName ? `Ahoy, ${voyage.studentName}!` : 'Loading name...'}
+          </h1>
           <p className="greeting-sub">
             {voyage
               ? `${teacher} charted ${lessons.length} ${questWord} for today. Sail to every island to reach Ithaca!`
@@ -205,12 +208,6 @@ function QuestCard({ id, lesson, index, total }) {
       <h2 id="home-quest-title" className="quest-title">{lesson.title}</h2>
       {lesson.skill && <span className="skill-chip">Skill: {lesson.skill}</span>}
       <p className="quest-description">{lesson.instructions}</p>
-      {lesson.example && (
-        <div className="quest-example">
-          <span className="tag-label">Example</span>
-          <pre>{lesson.example}</pre>
-        </div>
-      )}
       {locked ? (
         <p className="locked-note">This island is still in the mist. Finish the quests before it to sail here!</p>
       ) : (
@@ -232,18 +229,18 @@ function Logbook({ stars, visited, total, streak }) {
         <div className="logbook-stat">
           <img src="/pixel/star.svg" alt="" width="28" height="28" className="pixel-art" />
           <strong>{stars}</strong>
-          <span>{stars === 1 ? 'star' : 'stars'}</span>
+          <span className="sr-only">{stars === 1 ? 'star' : 'stars'}</span>
         </div>
         <div className="logbook-stat">
           <img src="/pixel/island.svg" alt="" width="40" height="26" className="pixel-art" />
           <strong>{visited}/{total}</strong>
-          <span>islands</span>
+          <span className="sr-only">islands visited</span>
         </div>
         {streak != null && (
           <div className="logbook-stat">
             <img src="/pixel/sparkle.svg" alt="" width="24" height="24" className="pixel-art" />
             <strong>{streak}</strong>
-            <span>day streak</span>
+            <span className="sr-only">day streak</span>
           </div>
         )}
       </div>
@@ -274,7 +271,7 @@ function ProfileMenu({ name, className, teacherName }) {
     }
   }, [open])
 
-  const shownName = name ?? 'Sailor'
+  const shownName = name ?? 'Loading name...'
   return (
     <div className="profile" ref={menuRef}>
       <button
