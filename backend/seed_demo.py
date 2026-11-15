@@ -17,7 +17,7 @@ CLASS_ID = "c1"
 LIVE_STUDENT_ID = "s1"
 SIMULATOR_SECONDS = 10
 
-# Copy of the 13 concept labels in athena/prompts.py (Person B).
+# Copy of the 15 concept labels in athena/prompts.py (Person B).
 # Keep this list in sync with that file.
 CONCEPTS = [
     "missing colon",
@@ -32,6 +32,8 @@ CONCEPTS = [
     "condition backwards",
     "return vs print",
     "wrong output",
+    "getting started",
+    "next step",
     "other",
 ]
 
