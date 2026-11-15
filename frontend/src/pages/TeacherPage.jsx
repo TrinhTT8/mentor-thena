@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import TeacherMenu from '../components/TeacherMenu.jsx'
 import { getInsight, getSeamap, resolveStudent } from '../api.js'
+import { hasQuests, loadVoyages, shipsReady } from '../voyageStore.js'
 
 // The teacher dashboard ("Captain's log"): who needs help first, Tiresias's class tip,
 // and every ship in the class. Refreshes every 3 seconds.
@@ -105,7 +106,13 @@ export default function TeacherPage() {
     }
   }
 
-  const students = seamap?.students ?? []
+  // DEMO: with no quest assigned (on the teacher home, in this browser) nobody is sailing
+  // yet, so the Sea Map stays empty. It fills in 15 s after the teacher assigns a quest.
+  // (Read on every render: the 1-second clock picks up an assign made in another tab.)
+  const voyages = loadVoyages()
+  const setSailing = hasQuests(voyages, classId) // a quest is assigned
+  const assigned = shipsReady(voyages, classId, now) // ...and the 15 s wait is over
+  const students = assigned ? seamap?.students ?? [] : []
   const counts = Object.fromEntries(STATUS_ORDER.map((s) => [s, students.filter((x) => x.status === s).length]))
 
   // The queue: every ship, red first, then yellow, green and Ithaca; inside each group
@@ -155,7 +162,13 @@ export default function TeacherPage() {
           </div>
 
           {queue.length === 0 ? (
-            <p className="queue-empty">{EMPTY_TEXT[filter]}</p>
+            <p className="queue-empty">
+              {assigned
+                ? EMPTY_TEXT[filter]
+                : setSailing
+                  ? 'Ships are setting sail... their status shows up in a few seconds.'
+                  : 'No quests assigned yet. Assign one from Your classes to set sail.'}
+            </p>
           ) : (
             <ul className="queue-list">
               {queue.map((s) => {
@@ -199,8 +212,8 @@ export default function TeacherPage() {
         </section>
 
         <div className="teacher-side">
-          <TiresiasPanel insight={insight} />
-          <WholeClass students={students} counts={counts} stats={seamap?.stats} />
+          <TiresiasPanel insight={assigned ? insight : insight && { ...insight, counts: [] }} />
+          <WholeClass students={students} counts={counts} stats={assigned ? seamap?.stats : null} />
         </div>
       </main>
 
@@ -209,21 +222,23 @@ export default function TeacherPage() {
   )
 }
 
-// "1 student is" / "3 students are"
-function studentsAre(count) {
-  return count === 1 ? '1 student is' : `${count} students are`
+// One trouble spot in words: "missing colon (2 students)"
+function spot({ concept, students }) {
+  return `${concept} (${students} ${students === 1 ? 'student' : 'students'})`
 }
 
 // Tiresias, the seer: points out the class's weak spot (no lesson plan) plus one bar
 // per concept. The counts come from /api/insight; its long "tip" text is not shown.
 function TiresiasPanel({ insight }) {
-  const counts = insight?.counts ?? []
+  const counts = [...(insight?.counts ?? [])].sort((a, b) => b.students - a.students)
   const most = Math.max(1, ...counts.map((c) => c.students))
-  const top = counts[0]
+  // The class's two biggest trouble spots (the second only if there is one).
+  const [first, second] = counts
 
   let vision = 'Reading the stars...'
-  if (insight && !top) vision = 'Calm seas ahead. Nobody is stuck right now.'
-  else if (top) vision = `${studentsAre(top.students)} stuck on ${top.concept}.`
+  if (insight && !first) vision = 'Calm seas ahead. Nobody is stuck right now.'
+  else if (first && !second) vision = `Your class is struggling most with ${spot(first)}.`
+  else if (first) vision = `Your class is struggling most with ${spot(first)} and ${spot(second)}.`
 
   return (
     <section className="tiresias" aria-labelledby="tiresias-title">

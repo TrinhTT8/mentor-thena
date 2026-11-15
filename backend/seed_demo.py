@@ -184,20 +184,20 @@ def seed():
         tasks.replace_one({"_id": task["_id"]}, task, upsert=True)
 
     # s1 is the live student, on Big kid (the missing colon demo bug).
-    # The bots are spread over all 4 quests, in a mix of statuses,
-    # so the Sea Map looks like a real class right away.
+    # Every ship is on Big kid too (the quest the teacher assigns in the demo),
+    # in a mix of statuses, so the Sea Map looks like a real class right away.
     demo_students = [
         make_student("s1", "Maya", "t2", "green", None, None, 0, 0),
-        make_student("s2", "Leo", "t1", "green", None, None, 0, 0),
+        make_student("s2", "Leo", "t2", "green", None, None, 0, 0),
         make_student("s3", "Ava", "t2", "yellow", "same_error",
                      "missing colon", 1, 1),
         make_student("s4", "Noah", "t2", "yellow", "idle",
                      "indentation", 2, 2),
-        make_student("s5", "Zoe", "t3", "red", "same_error",
-                     "infinite loop", 3, 4),
-        make_student("s6", "Sam", "t1", "ithaca", None, None, 0, 0),
-        make_student("s7", "Ivy", "t4", "green", None, None, 0, 0),
-        make_student("s8", "Ben", "t4", "yellow", "idle",
+        make_student("s5", "Zoe", "t2", "red", "same_error",
+                     "condition backwards", 3, 4),
+        make_student("s6", "Sam", "t2", "ithaca", None, None, 0, 0),
+        make_student("s7", "Ivy", "t2", "green", None, None, 0, 0),
+        make_student("s8", "Ben", "t2", "yellow", "idle",
                      "getting started", 1, 1),
     ]
     students.insert_many(demo_students)

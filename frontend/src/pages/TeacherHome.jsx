@@ -3,33 +3,14 @@ import { Link } from 'react-router-dom'
 import Logo from '../components/Logo.jsx'
 import TeacherMenu from '../components/TeacherMenu.jsx'
 import { getSeamap } from '../api.js'
-import { DEMO_CLASSES, DEMO_VOYAGES, QUEST_LIBRARY, SKILLS } from '../teacherDemo.js'
+import { DEMO_CLASSES, QUEST_LIBRARY, SKILLS } from '../teacherDemo.js'
+import { hasQuests, loadVoyages, markSetSail, saveVoyages, shipsReady } from '../voyageStore.js'
 
 // The teacher's home page: their classes on the left, the chosen class's banner,
 // today's voyage (the quests students sail, in order) and the quest library.
 // Class lists, the library and assigning are DEMO data for now (see teacherDemo.js);
-// the live counts come from each class's Sea Map.
-const STORAGE_KEY = 'mentorthena.teacher.voyages'
+// the live counts come from each class's Sea Map. The voyages are saved in voyageStore.js.
 const POLL_MS = 5000
-
-// The teacher's changes are remembered in this browser only (a convenience, not saving).
-function loadVoyages() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null')
-    if (saved && typeof saved === 'object') return { ...DEMO_VOYAGES, ...saved }
-  } catch {
-    // private window or blocked storage: start from the demo voyages
-  }
-  return DEMO_VOYAGES
-}
-
-function saveVoyages(voyages) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(voyages))
-  } catch {
-    // ignore: the page still works, it just forgets on reload
-  }
-}
 
 const questById = Object.fromEntries(QUEST_LIBRARY.map((q) => [q.id, q]))
 
@@ -39,6 +20,7 @@ export default function TeacherHome() {
   const [skill, setSkill] = useState('All')
   const [live, setLive] = useState({}) // live counts per class: { c1: { red, yellow, students } }
   const [note, setNote] = useState('')
+  const [now, setNow] = useState(() => Date.now()) // updated with each poll, for the 15 s set-sail wait
 
   // Live "needs you / getting hints" counts for every class (a class the server
   // doesn't know yet just shows no chips).
@@ -55,6 +37,7 @@ export default function TeacherHome() {
         next[DEMO_CLASSES[i].id] = { red: count('red'), yellow: count('yellow'), students: ships.length }
       })
       setLive(next)
+      setNow(Date.now())
     }
     const first = setTimeout(refresh, 0)
     const timer = setInterval(refresh, POLL_MS)
@@ -69,7 +52,10 @@ export default function TeacherHome() {
     })
   }
 
-  const assign = (questId) => updateVoyage((list) => (list.includes(questId) ? list : [...list, questId]))
+  const assign = (questId) => {
+    if (!hasQuests(voyages, classId)) markSetSail(classId) // the first quest: start the 15 s wait
+    updateVoyage((list) => (list.includes(questId) ? list : [...list, questId]))
+  }
   const remove = (questId) => updateVoyage((list) => list.filter((id) => id !== questId))
   const moveUp = (index) => updateVoyage((list) => {
     if (index === 0) return list
@@ -100,7 +86,8 @@ export default function TeacherHome() {
           <h1 id="classes-title" className="section-title">Your classes</h1>
           <ul className="class-list">
             {DEMO_CLASSES.map((c) => {
-              const counts = live[c.id]
+              // No quests assigned = nobody is sailing yet, so no "needs you / getting hints" chips.
+              const counts = shipsReady(voyages, c.id, now) ? live[c.id] : null
               return (
                 <li key={c.id}>
                   <button
@@ -112,7 +99,7 @@ export default function TeacherHome() {
                     <span className="class-card-top">
                       <span className="class-card-name">{c.name}</span>
                     </span>
-                    <span className="class-card-meta">{counts?.students ?? c.students} students · {c.language}</span>
+                    <span className="class-card-meta">{live[c.id]?.students ?? c.students} students · {c.language}</span>
                     {counts && (counts.red > 0 || counts.yellow > 0) && (
                       <span className="class-card-chips">
                         {counts.red > 0 && <span className="mini-chip is-red">{counts.red} needs you</span>}

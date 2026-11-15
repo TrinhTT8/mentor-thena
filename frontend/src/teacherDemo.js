@@ -20,6 +20,8 @@ export const QUEST_LIBRARY = [
   { id: 'q-crew', title: 'Name your crew', skill: 'Variables', blurb: 'Save names in variables and say hello to each.' },
   { id: 'q-waves', title: 'Count the waves', skill: 'Loops', blurb: 'Use a for loop to say Splash! 3 times.' },
   { id: 'q-row', title: 'Row, row, row', skill: 'Loops', blurb: 'Use a while loop to row until you reach land.' },
+  // Matches the real task t2 "Big kid" in backend/seed_demo.py (the demo student s1 is on it).
+  { id: 'q-big-kid', title: 'Big kid', skill: 'If statements', blurb: 'Use if to check if age is more than 8.' },
   { id: 'q-cyclops', title: 'Escape the Cyclops', skill: 'If statements', blurb: 'Use if to check when the cave is open.' },
   { id: 'q-sirens', title: "Pass the Sirens' song", skill: 'If / else', blurb: 'Use if and else to choose: listen or plug your ears.' },
   { id: 'q-odd-even', title: 'Odd or even oars', skill: 'If / else', blurb: 'Use % with if and else to sort the oars.' },
@@ -27,8 +29,9 @@ export const QUEST_LIBRARY = [
 ]
 
 // Each class's voyage at the start (quest ids, in the order students sail them).
+// Room 12 (c1) starts empty: in the demo the teacher assigns "Big kid" live.
 export const DEMO_VOYAGES = {
-  c1: ['q-hello', 'q-waves', 'q-aeolus', 'q-cyclops'],
+  c1: [],
   'demo-room-8': ['q-hello', 'q-crew'],
   'demo-code-club': ['q-oar'],
 }
