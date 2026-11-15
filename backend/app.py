@@ -99,7 +99,7 @@ def post_snapshot():
 
     if event == "run":
         # A new error or a wrong output does NOT reset the hint level.
-        # Only Ithaca or the teacher's resolve puts the ship back to green.
+        # Only Ithaca (or demo reset / re-seed) puts the ship back to green.
         # So the "progress" value is not used here.
         run_state, _progress = watcher.update_run_state(
             student,
@@ -143,7 +143,12 @@ def post_snapshot():
             if stuck_since is None:
                 stuck_since = now
             changes["last_hint_at"] = now
-            changes["stuck_reason"] = new_hint["reason"]
+            # Gemini wrote the hint: keep its short note for the teacher.
+            # Backup hint (Gemini didn't run): show the teacher the same hint the kid sees.
+            if new_hint["source"] == "fallback":
+                changes["stuck_reason"] = new_hint["text"]
+            else:
+                changes["stuck_reason"] = new_hint["reason"]
             changes["concept"] = new_hint["concept"]
 
             # Empty the churn window, so the same typing and deleting
@@ -257,14 +262,18 @@ def get_insight(class_id):
     return jsonify(result)
 
 
-@app.post("/api/resolve/<student_id>")
-def resolve_student(student_id):
-    """Teacher marks a student as helped: the ship goes back to green."""
-    result = dashboard.resolve_student(student_id)
-    if result is None:
-        return jsonify({"error": "student not found"}), 404
-
-    return jsonify(result)
+# Disabled: the teacher page has no "Mark helped" button any more.
+# Red ships go back to green only at Ithaca (or demo reset / re-seed).
+# To turn it back on, remove the # marks. dashboard.resolve_student() is kept.
+#
+# @app.post("/api/resolve/<student_id>")
+# def resolve_student(student_id):
+#     """Teacher marks a student as helped: the ship goes back to green."""
+#     result = dashboard.resolve_student(student_id)
+#     if result is None:
+#         return jsonify({"error": "student not found"}), 404
+#
+#     return jsonify(result)
 
 
 @app.post("/api/demo/reset")

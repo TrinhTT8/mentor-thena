@@ -175,7 +175,7 @@ The next stuck cue after level 3 turns the ship red (no new hint;
 `/api/status/s1` keeps showing the level 3 hint).
 A run with no error but the wrong output also gets a hint on the first run.
 A new error or a wrong output does not reset the hint level.
-Only Ithaca or the teacher's resolve does.
+Only Ithaca (or demo reset / re-seed) does.
 Run hints and type-and-delete hints never wait.
 After a type-and-delete hint, the window is emptied, so only new
 typing and deleting counts toward the next one.
@@ -265,6 +265,9 @@ curl http://localhost:5000/api/seamap/c1
  "stats": {"avg_seconds_stuck": 113, "siren_blocks": 0}}
 ```
 (shortened: the real response has all 8 students)
+- `reason`: Gemini's short note for the teacher. With Gemini off (or when
+  it fails), it is the backup hint text the student sees. Bots show the
+  simple cue text, like `Got an error on Run`
 - `avg_seconds_stuck`: average time stuck over the yellow and red ships
   right now, in whole seconds. 0 when nobody is stuck
 - `siren_blocks`: how many of this class's hints Siren Guard blocked,
@@ -296,16 +299,14 @@ curl http://localhost:5000/api/insight/c1
   mini lesson idea; with `USE_GEMINI=0` (or if Gemini fails) it comes from
   a ready-made list in `tiresias/insights.py`
 
-Teacher marks a student as helped (real)
+Teacher marks a student as helped (DISABLED)
+The teacher page has no "Mark helped" button any more, and the route is
+commented out in `app.py`, so this now gives a 404.
+Red ships go back to green only at Ithaca (or demo reset / re-seed).
+To turn it back on, remove the `#` marks in `app.py`.
 ```
 curl -X POST http://localhost:5000/api/resolve/s3
 ```
-```json
-{"ok": true, "status": "green"}
-```
-The ship goes green and its stuck state is cleared, so the next time
-it gets stuck the hints start again at level 1.
-A ship at Ithaca stays docked: `{"ok": true, "status": "ithaca"}`.
 
 Demo reset (real)
 ```
