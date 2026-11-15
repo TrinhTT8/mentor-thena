@@ -46,10 +46,12 @@ export function getInsight(classId) {
   return getJson(`/api/insight/${encodeURIComponent(classId)}`)
 }
 
+// DISABLED: the teacher page no longer has a "Mark helped" button, and the server's
+// resolve route is commented out. Red ships go back to green only at Ithaca.
 // The teacher helped this student: the ship goes back to green. -> { ok, status }
-export function resolveStudent(studentId) {
-  return postJson(`/api/resolve/${encodeURIComponent(studentId)}`, {})
-}
+// export function resolveStudent(studentId) {
+//   return postJson(`/api/resolve/${encodeURIComponent(studentId)}`, {})
+// }
 
 // Student view ----------------------------------------------------------------------
 // snapshot = { student_id, task_id, event: "run" | "heartbeat", code, output, error, activity? }

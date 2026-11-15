@@ -3,8 +3,14 @@
 The counts go to write_tip() in tiresias/insights.py, which turns them
 into one short tip for the teacher. The result is cached in
 classes.latest_insight.
+
+When the counts change, the old tip is sent at once and the new tip is
+written in a background thread, so the teacher's Sea Map never waits
+for Gemini.
 """
 
+import logging
+import threading
 from datetime import datetime, timezone
 
 import config
@@ -13,6 +19,13 @@ from seamap.dashboard import to_iso, seconds_since
 from tiresias.insights import write_tip
 
 CALM_SEA_TIP = "Everyone is sailing fine right now."
+
+log = logging.getLogger(__name__)
+
+# Classes whose new tip is being written right now, so we never start
+# two background threads for the same class.
+tips_in_progress = set()
+tips_lock = threading.Lock()
 
 
 def count_stuck_by_concept(class_id):
@@ -107,9 +120,31 @@ def get_insight(class_id):
     elif cached is not None and cached.get("counts") == counts:
         # Same counts as last time: keep the old tip, save a Gemini call.
         tip = cached.get("tip")
+    elif cached is not None:
+        # The counts changed. Send the old tip now, with the new counts,
+        # and write the new tip in the background. The next call gets it.
+        start_tip_in_background(class_id, counts)
+        old_tip_now = {
+            "tip": cached.get("tip"),
+            "counts": counts,
+            "updated_at": cached.get("updated_at"),
+        }
+        return format_insight(old_tip_now)
     else:
+        # No tip yet at all (first open after a reset): nothing older to show.
         tip = make_tip(counts)
 
+    save_insight(class_id, tip, counts, now)
+    insight = {
+        "tip": tip,
+        "counts": counts,
+        "updated_at": now,
+    }
+    return format_insight(insight)
+
+
+def save_insight(class_id, tip, counts, now):
+    """Save the tip and counts as the class's cached insight."""
     insight = {
         "tip": tip,
         "counts": counts,
@@ -117,4 +152,36 @@ def get_insight(class_id):
     }
     classes.update_one({"_id": class_id}, {"$set": {"latest_insight": insight}})
 
-    return format_insight(insight)
+
+def start_tip_in_background(class_id, counts):
+    """Write a new tip in a background thread, unless one is already running."""
+    with tips_lock:
+        if class_id in tips_in_progress:
+            return
+        tips_in_progress.add(class_id)
+
+    thread = threading.Thread(
+        target=write_tip_in_background,
+        args=(class_id, counts),
+        daemon=True,
+    )
+    thread.start()
+
+
+def write_tip_in_background(class_id, counts):
+    """Ask write_tip for the new tip, then save it. Runs in its own thread."""
+    try:
+        tip = make_tip(counts)
+
+        # Round to the millisecond, like get_insight, to match MongoDB dates.
+        now = datetime.now(timezone.utc)
+        milliseconds = now.microsecond // 1000
+        now = now.replace(microsecond=milliseconds * 1000)
+
+        save_insight(class_id, tip, counts, now)
+    except Exception:
+        # The teacher keeps the old tip; the next call will try again.
+        log.exception("Tiresias: could not write the new tip for %s", class_id)
+    finally:
+        with tips_lock:
+            tips_in_progress.discard(class_id)

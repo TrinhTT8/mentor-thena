@@ -170,9 +170,15 @@ curl -X POST http://localhost:5000/api/snapshot -H "Content-Type: application/js
           "text": "Python lines that start with if, for or while need something special at the end. Can you spot it?",
           "from_ships_log": false}}
 ```
-Running it again within 20 s gives no new hint (cooldown).
-After 20 s, the next run gives level 2, then level 3, then the ship turns red.
+Running it again right away gives level 2, then level 3.
+The next stuck cue after level 3 turns the ship red (no new hint;
+`/api/status/s1` keeps showing the level 3 hint).
 A run with no error but the wrong output also gets a hint on the first run.
+A new error or a wrong output does not reset the hint level.
+Only Ithaca (or demo reset / re-seed) does.
+Run hints and type-and-delete hints never wait.
+After a type-and-delete hint, the window is emptied, so only new
+typing and deleting counts toward the next one.
 (The numbers live in `config.STUCK_RULES`.)
 
 Reach Ithaca: run with the right output
@@ -195,7 +201,7 @@ curl -X POST http://localhost:5000/api/snapshot -H "Content-Type: application/js
 {"status": "green", "hint": null}
 ```
 
-Heartbeat, student is idle (no key AND no cursor move for 12 s or more)
+Heartbeat, student is idle (no key AND no cursor move for 7 s or more)
 ```
 curl -X POST http://localhost:5000/api/snapshot -H "Content-Type: application/json" -d "{\"student_id\":\"s1\",\"task_id\":\"t2\",\"event\":\"heartbeat\",\"code\":\"\",\"output\":\"\",\"error\":\"\",\"activity\":{\"seconds_since_last_key\":15,\"seconds_since_cursor_move\":15,\"keys_typed\":0,\"keys_deleted\":0}}"
 ```
@@ -203,6 +209,11 @@ curl -X POST http://localhost:5000/api/snapshot -H "Content-Type: application/js
 ```json
 {"status": "yellow", "hint": {"level": 1, "text": "...", "from_ships_log": false}}
 ```
+The idle clock starts at the last key press or cursor move.
+- The kid touched a key or the cursor after the last hint: the idle
+  hint comes after 7 s of idle, even right after a Run hint.
+- The kid has not touched anything since the last hint: the next
+  idle hint waits 30 s after that hint (`hint_cooldown_seconds`).
 
 Snapshot without student_id (error 400)
 ```
@@ -248,12 +259,15 @@ curl http://localhost:5000/api/seamap/c1
    {"id": "s1", "name": "Maya", "status": "green", "reason": null,
     "concept": null, "hint_level": 0, "stuck_since": null},
    {"id": "s4", "name": "Noah", "status": "yellow",
-    "reason": "No typing for 12 seconds", "concept": "indentation",
+    "reason": "No typing for 7 seconds", "concept": "indentation",
     "hint_level": 2, "stuck_since": "2026-11-14T23:33:12.990000+00:00"}
  ],
  "stats": {"avg_seconds_stuck": 113, "siren_blocks": 0}}
 ```
 (shortened: the real response has all 8 students)
+- `reason`: Gemini's short note for the teacher. With Gemini off (or when
+  it fails), it is the backup hint text the student sees. Bots show the
+  simple cue text, like `Got an error on Run`
 - `avg_seconds_stuck`: average time stuck over the yellow and red ships
   right now, in whole seconds. 0 when nobody is stuck
 - `siren_blocks`: how many of this class's hints Siren Guard blocked,
@@ -276,22 +290,23 @@ curl http://localhost:5000/api/insight/c1
   (same `updated_at`)
 - After 60 s it counts again. The tip is only rewritten (one `write_tip`
   call) when the counts changed
+- When the counts changed, the old tip is sent at once (with the new
+  counts) and the new tip is written in the background. The next call
+  gets it. Only the very first tip (no cached tip yet) waits for `write_tip`
 - Nobody stuck: `{"tip": "Everyone is sailing fine right now.", "counts": [], ...}`
 - The tip: the biggest problem gets a 1-minute mini lesson idea, the others
   are listed after "Also stuck:". With `USE_GEMINI=1` Gemini writes the
   mini lesson idea; with `USE_GEMINI=0` (or if Gemini fails) it comes from
   a ready-made list in `tiresias/insights.py`
 
-Teacher marks a student as helped (real)
+Teacher marks a student as helped (DISABLED)
+The teacher page has no "Mark helped" button any more, and the route is
+commented out in `app.py`, so this now gives a 404.
+Red ships go back to green only at Ithaca (or demo reset / re-seed).
+To turn it back on, remove the `#` marks in `app.py`.
 ```
 curl -X POST http://localhost:5000/api/resolve/s3
 ```
-```json
-{"ok": true, "status": "green"}
-```
-The ship goes green and its stuck state is cleared, so the next time
-it gets stuck the hints start again at level 1.
-A ship at Ithaca stays docked: `{"ok": true, "status": "ithaca"}`.
 
 Demo reset (real)
 ```

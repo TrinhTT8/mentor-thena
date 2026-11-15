@@ -2,7 +2,7 @@ import Logo from '../components/Logo.jsx'
 import { useCallback, useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import TeacherMenu from '../components/TeacherMenu.jsx'
-import { getInsight, getSeamap, resolveStudent } from '../api.js'
+import { getInsight, getSeamap } from '../api.js'
 import { hasQuests, loadVoyages, shipsReady } from '../voyageStore.js'
 
 // The teacher dashboard ("Captain's log"): who needs help first, Tiresias's class tip,
@@ -65,25 +65,33 @@ export default function TeacherPage() {
   const [updatedAt, setUpdatedAt] = useState(null)
   const [offline, setOffline] = useState(false)
   const [now, setNow] = useState(() => Date.now())
-  const [helping, setHelping] = useState(null) // id of the ship being marked helped
   const [filter, setFilter] = useState('all') // queue tab: 'all' or a status
 
+  // The Sea Map and the Tiresias tip load side by side. The Sea Map shows as soon as
+  // it arrives (fast); the tip fills in when it is ready (it may wait for Gemini).
   const refresh = useCallback(async () => {
-    const [map, tip] = await Promise.allSettled([getSeamap(classId), getInsight(classId)])
-    if (map.status === 'fulfilled') {
-      setSeamap(map.value)
-      setUpdatedAt(Date.now())
-      setOffline(false)
-    } else if (map.reason?.status === 404) {
-      // The server doesn't have this class yet: show an empty Sea Map, not an error.
-      setSeamap({ class_id: classId, students: [], stats: { avg_seconds_stuck: 0, siren_blocks: 0 } })
-      setUpdatedAt(Date.now())
-      setOffline(false)
-    } else {
-      setOffline(true)
-    }
-    if (tip.status === 'fulfilled') setInsight(tip.value)
-    else if (tip.reason?.status === 404) setInsight({ tip: '', counts: [], updated_at: null })
+    const loadMap = getSeamap(classId)
+      .then((map) => {
+        setSeamap(map)
+        setUpdatedAt(Date.now())
+        setOffline(false)
+      })
+      .catch((err) => {
+        if (err?.status === 404) {
+          // The server doesn't have this class yet: show an empty Sea Map, not an error.
+          setSeamap({ class_id: classId, students: [], stats: { avg_seconds_stuck: 0, siren_blocks: 0 } })
+          setUpdatedAt(Date.now())
+          setOffline(false)
+        } else {
+          setOffline(true)
+        }
+      })
+    const loadTip = getInsight(classId)
+      .then((tip) => setInsight(tip))
+      .catch((err) => {
+        if (err?.status === 404) setInsight({ tip: '', counts: [], updated_at: null })
+      })
+    await Promise.allSettled([loadMap, loadTip])
   }, [classId])
 
   // Load now, then every 3 s. A 1-second clock keeps "updated 3s ago" and stuck times fresh.
@@ -93,18 +101,6 @@ export default function TeacherPage() {
     const clock = setInterval(() => setNow(Date.now()), 1000)
     return () => { clearTimeout(first); clearInterval(poll); clearInterval(clock) }
   }, [refresh])
-
-  async function markHelped(studentId) {
-    setHelping(studentId)
-    try {
-      await resolveStudent(studentId)
-      await refresh()
-    } catch (err) {
-      console.warn('Mark helped failed', err)
-    } finally {
-      setHelping(null)
-    }
-  }
 
   // DEMO: with no quest assigned (on the teacher home, in this browser) nobody is sailing
   // yet, so the Sea Map stays empty. It fills in 15 s after the teacher assigns a quest.
@@ -194,16 +190,6 @@ export default function TeacherPage() {
                         </div>
                       )}
                     </div>
-                    {stuck && (
-                      <button
-                        type="button"
-                        className="stone-button is-small"
-                        onClick={() => markHelped(s.id)}
-                        disabled={helping === s.id}
-                      >
-                        {helping === s.id ? 'Saving...' : 'Mark helped'}
-                      </button>
-                    )}
                   </li>
                 )
               })}
