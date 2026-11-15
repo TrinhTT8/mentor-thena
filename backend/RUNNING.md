@@ -287,6 +287,9 @@ curl http://localhost:5000/api/insight/c1
   (same `updated_at`)
 - After 60 s it counts again. The tip is only rewritten (one `write_tip`
   call) when the counts changed
+- When the counts changed, the old tip is sent at once (with the new
+  counts) and the new tip is written in the background. The next call
+  gets it. Only the very first tip (no cached tip yet) waits for `write_tip`
 - Nobody stuck: `{"tip": "Everyone is sailing fine right now.", "counts": [], ...}`
 - The tip: the biggest problem gets a 1-minute mini lesson idea, the others
   are listed after "Also stuck:". With `USE_GEMINI=1` Gemini writes the
