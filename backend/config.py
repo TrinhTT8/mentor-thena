@@ -13,13 +13,13 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 
 # --- Argus stuck rules ---
 STUCK_RULES = {
-    "idle_seconds": 60,          # no key press or cursor move
-    "churn_window_seconds": 30,  # window for the type-and-delete rule
+    "idle_seconds": 12,          # no key press or cursor move
+    "churn_window_seconds": 20,  # window for the type-and-delete rule (a multiple of HEARTBEAT_SECONDS)
     "churn_delete_ratio": 0.7,   # deleted keys / typed keys
-    "churn_min_keys": 20,        # ignore tiny edits
-    "same_error_runs": 3,        # same error N runs in a row
-    "wrong_output_runs": 3,      # runs fine but wrong output N times
-    "hint_cooldown_seconds": 45, # min time between two hints for one student
+    "churn_min_keys": 12,        # ignore tiny edits
+    "same_error_runs": 1,        # same error N runs in a row
+    "wrong_output_runs": 1,      # runs fine but wrong output N times
+    "hint_cooldown_seconds": 20, # min time between two hints for one student
 }
 
 # Frontend sends a heartbeat this often (seconds).

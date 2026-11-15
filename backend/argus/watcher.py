@@ -3,11 +3,11 @@
 These functions only look at numbers and text. They never read or
 write MongoDB. The snapshot route in app.py saves what they return.
 
-The 4 cues:
-- same_error:   the same error on 3 runs in a row
-- wrong_output: the code runs, but the output is wrong 3 runs in a row
-- idle:         no key press AND no cursor move for 60 seconds
-- churn:        typing and deleting a lot over the last 3 heartbeats
+The 4 cues (the numbers live in config.STUCK_RULES):
+- same_error:   the same error on 1 run
+- wrong_output: the code runs, but the output is wrong on 1 run
+- idle:         no key press AND no cursor move for 12 seconds
+- churn:        typing and deleting a lot over the last 2 heartbeats (20 s)
 """
 
 from datetime import timezone
@@ -16,7 +16,7 @@ import config
 
 RULES = config.STUCK_RULES
 
-# How many heartbeats make up the churn window (30 s / 10 s = 3).
+# How many heartbeats make up the churn window (20 s / 10 s = 2).
 CHURN_HEARTBEATS = RULES["churn_window_seconds"] // config.HEARTBEAT_SECONDS
 
 
@@ -124,10 +124,10 @@ def is_idle(activity):
 
 
 def is_churning(recent_activity):
-    """True when the student types and deletes a lot (last 3 heartbeats).
+    """True when the student types and deletes a lot (last 2 heartbeats).
 
     Stuck when deleted / typed is 0.7 or more,
-    and typed + deleted is at least 20 keys.
+    and typed + deleted is at least 12 keys.
     """
     total_typed = 0
     total_deleted = 0
