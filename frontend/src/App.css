@@ -331,7 +331,7 @@ body {
   white-space: nowrap;
 }
 
-.quest-status.is-in-progress { background: var(--status-yellow); }
+.quest-status.is-in-progress { background: var(--amber); }
 .quest-status.is-completed { background: var(--status-green); }
 
 /* The teacher's example, on the right */
@@ -548,7 +548,7 @@ span.ide-tab { cursor: default; }
   box-shadow: var(--shadow-pixel);
 }
 
-.hint-card.is-hint { background: var(--status-yellow); }
+.hint-card.is-hint { background: var(--amber); }
 .hint-card.is-thinking,
 .hint-card.is-idle { background: var(--sail); }
 .hint-card.is-done { background: var(--status-green); }
@@ -616,17 +616,102 @@ span.ide-tab { cursor: default; }
 }
 
 /* Encouragement at the bottom */
-.athena-tip {
+/* Argus the dog, at the bottom of Athena's panel below a dashed line.
+   Dog on the left, his name and line on the right, lined up on their middles. */
+.argus {
   margin-top: auto;
   display: flex;
-  align-items: flex-start;
-  gap: var(--space-2);
-  padding: var(--space-3);
-  background: var(--parchment);
-  border: var(--border-thin) solid var(--wood-light);
+  align-items: center;
+  gap: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: var(--border-thin) dashed var(--wood-light);
 }
 
-.athena-tip p { margin: 0; font: var(--text-small); }
+/* The picture area: 108 x 68. The standing dog starts 12px in, so the tail
+   (a separate picture) can stick out on the left and join his back. */
+.argus-art {
+  position: relative;
+  flex-shrink: 0;
+  width: 108px;
+  height: 68px;
+}
+
+.argus-stand {
+  position: absolute;
+  left: 12px;
+  bottom: 0;
+  width: 96px;
+  height: 68px;
+}
+
+/* Only the tail moves: it swings from where it joins his back (its bottom-right corner).
+   Awake: a steady wag. Happy (Ithaca): a fast wag. */
+.argus-tail {
+  position: absolute;
+  left: 0;
+  top: 16px;
+  width: 24px;
+  height: 24px;
+  transform-origin: 100% 100%;
+  animation: tail-wag 0.8s ease-in-out infinite;
+}
+
+.argus.is-happy .argus-tail { animation-duration: 0.3s; }
+
+@keyframes tail-wag {
+  0%, 100% { transform: rotate(-12deg); }
+  50% { transform: rotate(14deg); }
+}
+
+/* Asleep: lying down, nothing moves; a quiet "z Z" above his head */
+.argus-sleep {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 96px;
+  height: 36px;
+}
+
+.argus-zzz {
+  position: absolute;
+  right: 4px;
+  top: 4px;
+  font: var(--text-tag);
+  color: var(--ink-dim);
+}
+
+.argus.is-asleep .argus-line { color: var(--ink-dim); }
+
+/* The "!" mark above his head when he spots trouble */
+.argus-mark {
+  position: absolute;
+  top: -22px;
+  right: 6px;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  font: var(--text-label);
+  font-size: 18px;
+  line-height: 1;
+  color: var(--on-accent);
+  background: var(--amber);
+  border: var(--border-thin) solid var(--pixel-edge);
+  animation: card-pop 260ms ease-out;
+}
+
+.argus-words { display: grid; gap: 2px; }
+
+.argus-name {
+  font: var(--text-tag);
+  color: var(--logo-accent);
+}
+
+.argus-line {
+  margin: 0;
+  font: var(--text-small);
+  color: var(--ink);
+}
 
 /* Teacher is coming (ship is red) */
 .teacher-note {
@@ -642,7 +727,7 @@ span.ide-tab { cursor: default; }
 /* ---------- Top bar extras ---------- */
 .top-left {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   flex-wrap: wrap;
   gap: var(--space-2) var(--space-4);
 }
@@ -721,9 +806,9 @@ span.ide-tab { cursor: default; }
 .home-main {
   flex: 1;
   width: 100%;
-  padding: var(--space-3) clamp(var(--space-3), 4vw, var(--space-6)) var(--space-4);
+  padding: var(--space-6) clamp(var(--space-3), 4vw, var(--space-6)) var(--space-4);
   display: grid;
-  gap: var(--space-4);
+  gap: var(--space-5);
   align-content: start;
 }
 
@@ -743,7 +828,7 @@ span.ide-tab { cursor: default; }
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   gap: var(--space-5) var(--space-4);
-  align-items: start;
+  align-items: stretch; /* the map and the right column end at the same height */
 }
 
 @media (min-width: 960px) {
@@ -753,6 +838,8 @@ span.ide-tab { cursor: default; }
 /* The map: a navy sea in a wooden frame */
 .voyage-map {
   position: relative;
+  display: flex;
+  flex-direction: column;
   padding: var(--space-3);
   background: var(--sea-bottom);
   border: var(--border-pixel) solid var(--wood-frame);
@@ -779,6 +866,7 @@ span.ide-tab { cursor: default; }
 /* Height follows the screen so the whole page fits without scrolling */
 .map-sea {
   position: relative;
+  flex: 1;
   height: clamp(320px, 54vh, 540px);
   background: linear-gradient(to bottom, var(--sea-bottom), var(--sea-top) 55%, var(--sea-bottom));
   overflow: hidden;
@@ -789,9 +877,9 @@ span.ide-tab { cursor: default; }
   position: absolute;
   left: 0;
   right: 0;
-  height: 12px;
+  height: 20px;
   background: url("/pixel/wave-line.svg") repeat-x;
-  background-size: 48px 12px;
+  background-size: 80px 20px;
   image-rendering: pixelated;
   opacity: 0.85;
   animation: wave-drift 6s linear infinite;
@@ -803,7 +891,7 @@ span.ide-tab { cursor: default; }
 /* Slide the foam by exactly one tile width, so the loop has no jump */
 @keyframes wave-drift {
   from { background-position-x: 0; }
-  to { background-position-x: 48px; }
+  to { background-position-x: 80px; }
 }
 
 /* The dotted route between the islands */
@@ -834,8 +922,42 @@ span.ide-tab { cursor: default; }
   position: absolute;
   left: var(--x);
   top: var(--y);
-  transform: translate(-50%, -50%);
+  /* put the middle of the island picture on the spot (8px padding + 3px border + half of 65px) */
+  transform: translate(-50%, -44px);
   z-index: 1;
+}
+
+/* Today's quest keeps an invisible island so its label stays in place under the ship */
+.map-island.is-placeholder { visibility: hidden; }
+
+/* The kid's ship: its own layer on the map, on top of the islands */
+.voyage-ship {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  z-index: 2;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+/* Every quest done: the ship sails from the last island into Ithaca, then docks
+   just to the left of the island */
+.voyage-ship.is-arriving {
+  transform: translate(calc(-50% - 72px), -55%);
+  animation: sail-to-ithaca 2.6s ease-in-out both;
+}
+
+@keyframes sail-to-ithaca {
+  from {
+    left: var(--from-x);
+    top: var(--from-y);
+    transform: translate(-50%, -50%);
+  }
+  to {
+    left: var(--x);
+    top: var(--y);
+    transform: translate(calc(-50% - 72px), -55%);
+  }
 }
 
 .map-stop-button {
@@ -851,6 +973,7 @@ span.ide-tab { cursor: default; }
 }
 
 .map-stop.is-selected .map-stop-button { border-color: var(--gold); }
+.map-stop.is-completed .map-stop-button { border-color: transparent; }
 
 .map-island { width: 100px; height: 65px; }
 
@@ -906,16 +1029,18 @@ span.ide-tab { cursor: default; }
   padding: 0 var(--space-2);
   font: var(--text-tag);
   text-transform: uppercase;
-  color: var(--gold);
+  color: var(--ithaca);
   background: var(--sea-bottom);
-  border: var(--border-thin) solid var(--gold);
+  border: var(--border-thin) solid var(--ithaca);
 }
 
 /* Right column */
+/* Starts level with the map (Athena peeks up into the space above the card);
+   the logbook stretches so both columns end together. */
 .home-side {
   display: grid;
+  grid-template-rows: auto 1fr;
   gap: var(--space-4);
-  padding-top: var(--space-5); /* room for Athena peeking over the card */
 }
 
 .home-quest {
@@ -1010,6 +1135,8 @@ span.ide-tab { cursor: default; }
   }
 
   .map-stop { position: relative; left: auto; top: auto; transform: none; }
+  .voyage-ship { display: none; }
+  .map-island.is-placeholder { visibility: visible; content: url("/pixel/ship-green.svg"); width: 65px; }
   .home-top-right .room-chip { display: none; }
 }
 
@@ -1193,7 +1320,10 @@ span.ide-tab { cursor: default; }
 .queue-list {
   list-style: none;
   margin: 0;
-  padding: 0;
+  padding: 0 var(--space-2) var(--space-2) 0;
+  max-height: clamp(260px, calc(100vh - 320px), 720px);
+  overflow-y: auto;
+  scrollbar-color: var(--wood-light) transparent;
   display: grid;
   gap: var(--space-3);
 }
@@ -1208,17 +1338,8 @@ span.ide-tab { cursor: default; }
   border: var(--border-thin) solid var(--wood-light);
 }
 
-/* Small status square + word next to the name */
-.queue-status {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  font: var(--text-small);
-  font-size: 13px;
-}
-
-.queue-status .status-square { width: 14px; height: 14px; }
-.queue-card.is-red .queue-status .status-square { animation: blink 1.2s steps(2) infinite; }
+/* Red cards: the ship gently blinks so the teacher's eye goes there first */
+.queue-card.is-red img { animation: blink 1.2s steps(2) infinite; }
 
 .queue-card.is-red {
   background: var(--alert-tint);
@@ -1408,6 +1529,349 @@ span.ide-tab { cursor: default; }
   .queue-card { grid-template-columns: auto minmax(0, 1fr); }
   .queue-card .stone-button { grid-column: 1 / -1; }
   .class-label { padding-left: 0; border-left: none; }
+}
+
+/* ---------- Teacher home: classes, class banner, today's voyage, quest library ---------- */
+.th-main {
+  flex: 1;
+  width: 100%;
+  padding: var(--space-3) clamp(var(--space-3), 4vw, var(--space-6)) var(--space-4);
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: clamp(220px, 20vw, 280px) minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-areas:
+    "classes banner  banner"
+    "classes voyage  library";
+  align-items: start;
+}
+
+.th-classes { grid-area: classes; display: grid; gap: var(--space-3); }
+.class-banner { grid-area: banner; }
+.th-voyage { grid-area: voyage; }
+.th-library { grid-area: library; }
+
+@media (max-width: 1100px) {
+  .th-main {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      "banner  banner"
+      "classes classes"
+      "voyage  library";
+  }
+  .night-scene { display: none; }
+}
+
+@media (max-width: 760px) {
+  .th-main {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas: "banner" "classes" "voyage" "library";
+  }
+}
+
+/* Wide screens: the page is exactly one screen tall. The panels fill the height,
+   the voyage and library lists scroll inside, and the night sea sits at the bottom left. */
+@media (min-width: 1101px) {
+  .teacher-home { height: 100vh; overflow: hidden; }
+  .teacher-home .th-main {
+    min-height: 0;
+    grid-template-rows: auto minmax(0, 1fr);
+    align-items: stretch;
+  }
+  .teacher-home .th-classes {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    min-height: 0;
+  }
+  .teacher-home .night-scene { margin-top: auto; flex-shrink: 0; }
+  .teacher-home .th-voyage,
+  .teacher-home .th-library { min-height: 0; height: 100%; }
+  .teacher-home .voyage-list { overflow-y: auto; min-height: 0; padding-right: var(--space-1); }
+  .teacher-home .library-list { flex: 1; min-height: 0; max-height: none; }
+  .teacher-home .voyage-footer { margin-top: var(--space-3); }
+}
+
+/* Class list */
+.class-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+
+.class-card {
+  width: 100%;
+  display: grid;
+  gap: var(--space-1);
+  padding: var(--space-3);
+  text-align: left;
+  font: inherit;
+  color: var(--on-accent);
+  background: var(--parchment);
+  border: var(--border-soft) solid var(--wood-light);
+  cursor: pointer;
+}
+
+.class-card:hover { border-color: var(--wood-frame); }
+
+.class-card.is-selected {
+  background: var(--panel);
+  border-color: var(--border);
+  box-shadow: var(--shadow-pixel);
+}
+
+.class-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.class-card-name { font: var(--text-label); color: var(--heading); }
+.class-card-meta { font: var(--text-small); color: var(--ink-dim); }
+
+.live-chip,
+.mini-chip {
+  padding: 0 var(--space-2);
+  font: var(--text-small);
+  font-size: 12px;
+  color: var(--on-accent);
+  border: var(--border-thin) solid var(--pixel-edge);
+  white-space: nowrap;
+}
+
+.live-chip { background: var(--status-green); }
+.mini-chip.is-red { background: var(--status-red); }
+.mini-chip.is-yellow { background: var(--status-yellow); }
+
+.class-card-chips { display: flex; flex-wrap: wrap; gap: var(--space-1); }
+
+.new-class {
+  padding: var(--space-3);
+  font: var(--text-label);
+  color: var(--heading);
+  background: transparent;
+  border: var(--border-thin) dashed var(--border);
+  cursor: pointer;
+}
+
+.new-class:hover { background: var(--panel); }
+
+.th-note { margin: 0; font: var(--text-small); color: var(--ink-dim); }
+
+/* A small night sea with the moon and a ship */
+.night-scene {
+  position: relative;
+  height: 140px;
+  margin-top: var(--space-3);
+  overflow: hidden;
+  background: linear-gradient(to bottom, var(--sea-bottom), var(--sea-top));
+  border: var(--border-soft) solid var(--wood-frame);
+}
+
+.night-moon { position: absolute; top: 10px; right: 16px; width: 40px; height: 40px; }
+
+.night-ship {
+  position: absolute;
+  left: 45%;
+  bottom: 18px;
+  width: 40px;
+  height: 40px;
+  animation: ship-bob 3s ease-in-out infinite;
+}
+
+/* Starry banner for the chosen class */
+.class-banner {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  color: var(--insight-ink);
+  background:
+    radial-gradient(circle at 22% 30%, var(--insight-ink) 0 1.5px, transparent 2px),
+    radial-gradient(circle at 38% 70%, var(--insight-ink) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 47% 22%, var(--gold) 0 1.5px, transparent 2px),
+    radial-gradient(circle at 63% 60%, var(--insight-ink) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 72% 18%, var(--insight-ink) 0 1.5px, transparent 2px),
+    var(--insight-bg);
+  border: var(--border-soft) solid var(--wood-frame);
+  box-shadow: 6px 6px 0 var(--wood-frame);
+}
+
+.banner-title { margin: 0; font: var(--text-display); font-size: clamp(32px, 3.5vw, 44px); }
+.banner-meta { margin: 0; font: var(--text-body); }
+
+.banner-moon { width: 48px; height: 48px; margin-left: auto; }
+
+.banner-actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.class-code {
+  display: grid;
+  justify-items: center;
+  padding: var(--space-1) var(--space-3);
+  border: var(--border-soft) solid var(--gold);
+}
+
+.class-code-label { font: var(--text-tag); font-size: 14px; text-transform: uppercase; color: var(--insight-ink); }
+.class-code-value { font: var(--text-title); color: var(--gold); letter-spacing: 2px; }
+
+.class-banner .stone-button { text-decoration: none; }
+
+/* Today's voyage */
+.th-voyage,
+.th-library {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-4);
+  color: var(--on-accent);
+}
+
+.th-voyage {
+  background: var(--parchment);
+  border: var(--border-soft) solid var(--wood-frame);
+  box-shadow: 6px 6px 0 var(--wood-frame);
+  min-height: clamp(300px, calc(100vh - 360px), 640px);
+}
+
+.voyage-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+
+.voyage-item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--panel);
+  border: var(--border-thin) solid var(--wood-light);
+}
+
+.voyage-number {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  font: var(--text-label);
+  color: var(--gold);
+  background: var(--sea-bottom);
+}
+
+.voyage-text { display: grid; gap: 2px; min-width: 0; }
+.voyage-title { font: var(--text-body); font-weight: 800; }
+.voyage-skill { font: var(--text-small); color: var(--ink-dim); }
+
+.small-button {
+  padding: var(--space-1) var(--space-2);
+  font: var(--text-small);
+  color: var(--ink);
+  background: var(--parchment);
+  border: var(--border-thin) solid var(--border);
+  cursor: pointer;
+}
+
+.small-button:hover:not(:disabled) { background: var(--stone-light); }
+.small-button:disabled { opacity: 0.4; cursor: default; }
+
+.voyage-footer {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: auto 0 0;
+  padding: var(--space-2) var(--space-3);
+  font: var(--text-small);
+  background: var(--panel);
+  border: var(--border-thin) solid var(--wood-light);
+}
+
+/* Quest library */
+.th-library {
+  background: var(--panel);
+  border: var(--border-soft) solid var(--frame);
+  box-shadow: var(--shadow-pixel);
+}
+
+.skill-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.skill-filter {
+  padding: var(--space-1) var(--space-2);
+  font: var(--text-small);
+  color: var(--ink);
+  background: var(--panel);
+  border: var(--border-thin) solid var(--border);
+  cursor: pointer;
+}
+
+.skill-filter.is-active { color: var(--insight-ink); background: var(--sea-bottom); }
+.skill-filter.is-active .skill-count { color: var(--gold); }
+.skill-count { color: var(--ink-dim); font-weight: 700; }
+
+/* The list scrolls; the title and filters stay put */
+.library-list {
+  max-height: clamp(260px, calc(100vh - 420px), 640px);
+  overflow-y: auto;
+  padding-right: var(--space-2);
+  scrollbar-color: var(--frame) transparent;
+}
+
+.library-group-title {
+  margin: var(--space-3) 0 var(--space-1);
+  padding-bottom: var(--space-1);
+  font: var(--text-label);
+  color: var(--heading);
+  border-bottom: var(--border-thin) solid var(--border);
+}
+
+.library-group:first-child .library-group-title { margin-top: 0; }
+
+.library-item {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--parchment-row);
+}
+
+.library-blurb { font: var(--text-small); color: var(--ink-dim); }
+
+.assign-button {
+  padding: var(--space-1) var(--space-3);
+  font: var(--text-small);
+  color: var(--ink);
+  background: var(--panel);
+  border: var(--border-thin) solid var(--border);
+  box-shadow: 3px 3px 0 var(--border);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.assign-button:hover { background: var(--stone-light); }
+.assign-button:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--border); }
+
+.assigned-chip {
+  padding: var(--space-1) var(--space-3);
+  font: var(--text-small);
+  color: var(--on-accent);
+  background: var(--status-green);
+  border: var(--border-thin) solid var(--pixel-edge);
+  white-space: nowrap;
 }
 
 /* ---------- Ithaca celebration ---------- */

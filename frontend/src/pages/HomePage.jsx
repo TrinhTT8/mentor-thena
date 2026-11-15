@@ -40,6 +40,16 @@ export default function HomePage() {
   const shown = lessons[shownIndex]
   const done = lessons.filter((l) => l.status === 'completed').length
   const teacher = voyage?.teacherName ?? 'Your teacher'
+
+  // Where the ship is: on today's quest, or (every quest done) sailing into Ithaca.
+  const todayIndex = lessons.findIndex((l) => l.status === 'current')
+  const allDone = lessons.length > 0 && done === lessons.length
+  let ship = null
+  if (allDone) {
+    ship = { to: spots[lessons.length], from: spots[lessons.length - 1], arriving: true }
+  } else if (todayIndex >= 0) {
+    ship = { to: spots[todayIndex], from: spots[todayIndex], arriving: false }
+  }
   const questWord = lessons.length === 1 ? 'quest' : 'quests'
 
   return (
@@ -103,12 +113,15 @@ export default function HomePage() {
                         aria-label={`Quest ${i + 1}: ${lesson.title}. ${chip.text.replace(/[★▶] /, '')}`}
                         aria-pressed={i === shownIndex}
                       >
-                        {/* The quest the kid is on now shows only their ship; the others show an island */}
-                        {lesson.status === 'current' ? (
-                          <img src="/pixel/ship-green.svg" alt="" width="72" height="72" className="map-ship pixel-art" />
-                        ) : (
-                          <img src={`/pixel/${ISLAND_ART[lesson.status]}.svg`} alt="" width="100" height="65" className="map-island pixel-art" />
-                        )}
+                        {/* The quest the kid is on now shows only their ship (drawn below, on its own
+                            layer); an invisible island keeps the label in the same place */}
+                        <img
+                          src={`/pixel/${ISLAND_ART[lesson.status] ?? 'island'}.svg`}
+                          alt=""
+                          width="100"
+                          height="65"
+                          className={`map-island pixel-art${lesson.status === 'current' ? ' is-placeholder' : ''}`}
+                        />
                         {lesson.status === 'completed' && (
                           <img src="/pixel/sparkle.svg" alt="" width="16" height="16" className="map-sparkle pixel-art" />
                         )}
@@ -134,6 +147,29 @@ export default function HomePage() {
                   </li>
                 )}
               </ol>
+
+              {/* The kid's ship. It sits on today's quest; when every quest is done it sails
+                  from the last island to Ithaca and docks beside it. */}
+              {ship && (
+                <div
+                  className={`voyage-ship${ship.arriving ? ' is-arriving' : ''}`}
+                  style={{
+                    '--x': `${ship.to.x}%`,
+                    '--y': `${ship.to.y}%`,
+                    '--from-x': `${ship.from.x}%`,
+                    '--from-y': `${ship.from.y}%`,
+                  }}
+                  aria-hidden="true"
+                >
+                  <img
+                    src={`/pixel/${ship.arriving ? 'ship-home' : 'ship-green'}.svg`}
+                    alt=""
+                    width="72"
+                    height="72"
+                    className="map-ship pixel-art"
+                  />
+                </div>
+              )}
             </div>
           </section>
 

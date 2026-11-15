@@ -21,9 +21,10 @@
   --sail: #f6f1e3;          /* hint bubble background */
   --wood: #8b5a2b;          /* sprites only */
   --status-green: #5ee38a;  /* sailing */
-  --status-yellow: #ffb020; /* getting hints */
+  --status-yellow: #ffd34d; /* getting hints: yellow (the name matches the server status "yellow") */
+  --amber: #ffb020;         /* kid view: Athena's hint card and the "In progress" badge */
   --status-red: #ff8a8a;    /* needs the teacher (teacher view) and error text */
-  --ithaca: var(--gold);    /* done */
+  --ithaca: #6cb4ff;        /* at Ithaca: sky blue, so it never looks like "getting hints" yellow */
   --focus-ring: var(--teal);
   --heading: var(--gold);   /* panel titles and the logo */
   --logo-accent: var(--gold); /* "Thena" in the logo: gold on dark */

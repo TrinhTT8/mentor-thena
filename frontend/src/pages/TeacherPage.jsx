@@ -1,6 +1,7 @@
 import Logo from '../components/Logo.jsx'
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useCallback, useEffect, useState } from 'react'
+import { Link, useParams } from 'react-router-dom'
+import TeacherMenu from '../components/TeacherMenu.jsx'
 import { getInsight, getSeamap, resolveStudent } from '../api.js'
 
 // The teacher dashboard ("Captain's log"): who needs help first, Tiresias's class tip,
@@ -11,9 +12,9 @@ const MAX_LEVEL = 3
 // Status language for the teacher (red is shown here, never to kids).
 const STATUS = {
   red: { icon: '!', word: 'Needs you', ship: 'ship-red' },
-  yellow: { icon: '?', word: 'Getting hints', ship: 'ship-yellow' },
+  yellow: { icon: '?', word: 'Getting hints', ship: 'ship-helping' },
   green: { icon: '✓', word: 'Sailing', ship: 'ship-green' },
-  ithaca: { icon: '★', word: 'At Ithaca', ship: 'ship-ithaca' },
+  ithaca: { icon: '★', word: 'At Ithaca', ship: 'ship-home' },
 }
 const STATUS_ORDER = ['red', 'yellow', 'green', 'ithaca']
 
@@ -43,56 +44,6 @@ function QueueTab({ id, label, count, filter, onPick }) {
       {id !== 'all' && <span className={`status-square is-${id}`} aria-hidden="true" />}
       {label} <span className="queue-tab-count">{count}</span>
     </button>
-  )
-}
-
-// The teacher's button in the top right: initials, name and a menu with Log out.
-// The server does not send the teacher's name yet, so it says "Teacher".
-function TeacherMenu({ name = 'Teacher' }) {
-  const [open, setOpen] = useState(false)
-  const menuRef = useRef(null)
-  const navigate = useNavigate()
-  const initials = name.split(/\s+/).map((w) => w.replace(/[^A-Za-z]/g, '')[0] ?? '').join('').slice(0, 2).toUpperCase()
-
-  useEffect(() => {
-    if (!open) return
-    function onPointer(event) {
-      if (!menuRef.current?.contains(event.target)) setOpen(false)
-    }
-    function onKey(event) {
-      if (event.key === 'Escape') setOpen(false)
-    }
-    document.addEventListener('pointerdown', onPointer)
-    document.addEventListener('keydown', onKey)
-    return () => {
-      document.removeEventListener('pointerdown', onPointer)
-      document.removeEventListener('keydown', onKey)
-    }
-  }, [open])
-
-  return (
-    <div className="profile" ref={menuRef}>
-      <button
-        type="button"
-        className="profile-button teacher-profile"
-        aria-expanded={open}
-        aria-haspopup="true"
-        onClick={() => setOpen((o) => !o)}
-      >
-        <span className="initials-avatar" aria-hidden="true">{initials}</span>
-        <span className="teacher-name">{name}</span>
-        <span aria-hidden="true">▾</span>
-      </button>
-      {open && (
-        <div className="profile-card">
-          <span className="initials-avatar is-big" aria-hidden="true">{initials}</span>
-          <p className="profile-card-name">{name}</p>
-          <button type="button" className="stone-button is-small" onClick={() => navigate('/')}>
-            Log out
-          </button>
-        </div>
-      )}
-    </div>
   )
 }
 
@@ -171,6 +122,7 @@ export default function TeacherPage() {
             <span className="class-kicker">Captain&apos;s Log</span>
             <span className="class-name">Class {classId}</span>
           </div>
+          <Link to="/teacher" className="back-link">← Your classes</Link>
         </div>
 
         <div className="teacher-summary">
@@ -208,10 +160,8 @@ export default function TeacherPage() {
                     <div className="queue-body">
                       <div className="queue-name-row">
                         <span className="queue-name">{s.name}</span>
-                        <span className="queue-status">
-                          <span className={`status-square is-${s.status}`} aria-hidden="true" />
-                          {STATUS[s.status].word}
-                        </span>
+                        {/* The ship picture shows the status; screen readers get it as words */}
+                        <span className="sr-only">{STATUS[s.status].word}</span>
                       </div>
                       <p className="queue-reason">{stuck ? (s.reason || 'Working it out') : STATUS_LINE[s.status]}</p>
                       {stuck && (

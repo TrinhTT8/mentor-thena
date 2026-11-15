@@ -1,19 +1,27 @@
 const MAX_LEVEL = 3
 
-// A friendly line at the bottom of Athena's panel, matched to what is happening.
-const TIPS = {
-  idle: 'Every program starts small. One line that works is a great first step!',
-  hint: 'Coders fix things one small change at a time. Try one idea, then press Run!',
-  teacher: 'Asking for help is what great sailors do. Keep trying while you wait!',
-  ithaca: 'You did it! Read your code once more and see how it works.',
+// Argus, Odysseus's loyal dog, sits at the bottom of the panel. He is the one who
+// "spots trouble" (on the server, Argus is the part that notices a stuck kid),
+// so his line follows what is happening. He naps until the coder needs help.
+// mood: 'asleep' | 'awake' | 'alert' (shows "!") | 'happy' (fast wag)
+function argusSays({ atIthaca, teacherComing, thinking, hint, hasError }) {
+  if (atIthaca) return { mood: 'happy', line: 'Woof woof! You did it!' }
+  if (teacherComing) return { mood: 'alert', line: 'Woof! I barked for your teacher. Help is on the way!' }
+  if (thinking) return { mood: 'awake', line: 'Woof! I am fetching Athena.' }
+  if (hint?.level === 3) return { mood: 'alert', line: 'Woof! I spotted trouble, so Athena sent her scroll.' }
+  if (hint) return { mood: 'alert', line: 'Woof! I spotted trouble, so Athena sent a hint.' }
+  if (hasError) return { mood: 'asleep', line: "Zzz... keep going, I'm right here." }
+  return { mood: 'asleep', line: "Zzz... napping. I'll wake up if you need help." }
 }
 
-// The right-hand panel: Athena (an owl) with her current hint, earlier hints and a tip.
+// The right-hand panel: Athena (an owl) with her current hint and earlier hints,
+// and Argus the dog at the bottom.
 // Hints only have level, text and from_ships_log (reason/concept are teacher-only).
 //   hint:          the newest hint, or null
 //   earlierHints:  hints she gave before this one (newest first)
 //   teacherComing: the ship is red (all 3 hints used), so the teacher was told
-export default function AthenaPanel({ hint, earlierHints, thinking, atIthaca, teacherComing }) {
+//   hasError:      the last run had a Python error
+export default function AthenaPanel({ hint, earlierHints, thinking, atIthaca, teacherComing, hasError }) {
   let card
   if (atIthaca) {
     card = (
@@ -42,10 +50,7 @@ export default function AthenaPanel({ hint, earlierHints, thinking, atIthaca, te
     )
   }
 
-  let tip = TIPS.idle
-  if (atIthaca) tip = TIPS.ithaca
-  else if (teacherComing) tip = TIPS.teacher
-  else if (hint) tip = TIPS.hint
+  const argus = argusSays({ atIthaca, teacherComing, thinking, hint, hasError })
 
   return (
     <aside className="athena-panel" aria-labelledby="athena-title">
@@ -81,9 +86,27 @@ export default function AthenaPanel({ hint, earlierHints, thinking, atIthaca, te
         </div>
       )}
 
-      <div className="athena-tip">
-        <img src="/pixel/star.svg" alt="" width="22" height="22" className="pixel-art" />
-        <p>{tip}</p>
+      {/* Argus: asleep (with "z Z") until help is needed, then standing with a wagging tail.
+          Only the tail moves. The "!" mark shows when he spots trouble. */}
+      <div className={`argus is-${argus.mood}`}>
+        <div className="argus-art" aria-hidden="true">
+          {argus.mood === 'asleep' ? (
+            <>
+              <img src="/pixel/argus-sleep.svg" alt="" width="96" height="36" className="argus-sleep pixel-art" />
+              <span className="argus-zzz">z Z</span>
+            </>
+          ) : (
+            <>
+              {argus.mood === 'alert' && <span className="argus-mark">!</span>}
+              <img src="/pixel/argus-tail.svg" alt="" width="24" height="24" className="argus-tail pixel-art" />
+              <img src="/pixel/argus-stand.svg" alt="" width="96" height="68" className="argus-stand pixel-art" />
+            </>
+          )}
+        </div>
+        <div className="argus-words" aria-live="polite">
+          <span className="argus-name">Argus</span>
+          <p className="argus-line">{argus.line}</p>
+        </div>
       </div>
     </aside>
   )

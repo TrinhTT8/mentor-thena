@@ -275,6 +275,7 @@ export default function StudentPage() {
           thinking={thinking}
           atIthaca={shipStatus === 'ithaca'}
           teacherComing={shipStatus === 'red'}
+          hasError={Boolean(result.error)}
         />
 
         {debug && <DebugLine peek={activity.peek} />}
