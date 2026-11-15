@@ -13,3 +13,4 @@
 .hint-lead { display: block; font-weight: 700; margin-bottom: 4px; }
 .hint-text { margin: 0; }
 .debug-line { margin: 0; font-family: ui-monospace, Consolas, monospace; font-size: 12px; color: #666; }
+.ithaca-box { padding: 12px; border: 2px solid #2e7a3c; background: #e6f6e9; font-weight: 700; }

@@ -25,7 +25,10 @@ CONCEPTS = {
     "equals vs double equals": "used = (store a value) where == (compare) was needed, or the other way round",
     "condition backwards": "an if or while compares the wrong way, like > instead of < or > instead of >=",
     "return vs print": "a function prints instead of returning, forgets return (shows None), or uses return outside a function",
-    "wrong output": "the code runs but the result does not match the task, and no label above fits",
+    "wrong output": "the code looks finished and runs, but the result does not match the task, and no label above fits",
+    # Building: no bug yet, the program is just not finished
+    "getting started": "the code is empty or has almost nothing yet; the student does not know how to begin the task",
+    "next step": "the code so far runs without an error, but the program is not finished; the student needs the next piece",
     # Catch-all
     "other": "anything that does not fit the labels above",
 }
@@ -33,7 +36,8 @@ CONCEPTS = {
 Concept = Literal[
     "missing colon", "indentation", "misspelled name", "missing quotes", "unclosed bracket",
     "text and number mix-up", "infinite loop", "loop runs wrong number of times",
-    "equals vs double equals", "condition backwards", "return vs print", "wrong output", "other",
+    "equals vs double equals", "condition backwards", "return vs print", "wrong output",
+    "getting started", "next step", "other",
 ]
 
 # Safety check: the descriptions above and the allowed values must list the same labels.
@@ -53,7 +57,8 @@ Like the goddess who guided Odysseus, you give hints and courage, never the answ
 
 Hard rules:
 - NEVER write the student's corrected code or a corrected version of any of their lines.
-- At levels 1 and 2, NEVER name or show the missing symbol or say exactly what to type. Lead the student to find it.
+- NEVER write the program for their task, or the next line of their program.
+- At levels 1 and 2, NEVER name or show the missing symbol or keyword, or say exactly what to type. Lead the student to find it.
 - At most 2 short sentences. Use words an 8-year-old knows.
 - Be warm. Never say "wrong", "bad", "mistake" or "stuck".
 - Do not use emoji.
@@ -75,6 +80,19 @@ LEVEL_RULES = {
        "Then ask them to compare it with their own line. Still do not fix their code.",
 }
 
+# Same 3 levels, for a program that is not finished yet ("getting started" / "next step").
+# There is no bug to point at, so we guide them to the next small piece instead.
+BUILD_LEVEL_RULES = {
+    1: "Level 1: ask ONE question about the task's goal or about the next small part the program needs. "
+       "Do not name any Python keyword or symbol.",
+    2: "Level 2: point to WHICH PART of the task to work on next and say in plain words what that part must do "
+       "(for example 'find what is left over after splitting into 2 equal groups'). "
+       "Do not name or show the keyword or symbol, and do not write any of their program.",
+    3: "Level 3: show the building block they need with a tiny code example that is NOT their task "
+       "(for example about pets or snacks). The example MAY show the keyword or symbol. "
+       "Then ask how they could use it. Never write their program or their next line.",
+}
+
 
 # 4. Why Argus thinks the student needs help (sets the tone) ----------------------------
 CUE_NOTES = {
@@ -90,13 +108,20 @@ def build_hint_prompt(task, code, level, cue, error="", output="", expected_outp
                       past_hints=None, ships_log_hint=None):
     """Build the message for Gemini about one student's situation.
 
-    task: {"title", "instructions"}; past_hints: hint texts already shown (so we don't repeat);
+    task: {"title", "instructions"} and optionally "steps" (the teacher's plan, a list of short texts);
+    past_hints: hint texts already shown (so we don't repeat);
     ships_log_hint: a hint that helped another student with a similar bug (optional).
     """
     concept_lines = "\n".join(f'- "{name}": {meaning}' for name, meaning in CONCEPTS.items())
     parts = [
-        f"Task title: {task['title']}",
-        f"Task instructions: {task['instructions']}",
+        f"Task title: {task.get('title', '')}",
+        f"Task instructions: {task.get('instructions', '')}",
+    ]
+    if task.get("steps"):
+        parts.append("The teacher's plan for this task, in order (use it to pick the ONE next small step; "
+                     "never list the later steps):\n"
+                     + "\n".join(f"{i}. {step}" for i, step in enumerate(task["steps"], start=1)))
+    parts += [
         "Student code (line numbers added):",
         "<student_code>\n"
         + ("\n".join(f"{i}: {line}" for i, line in enumerate(code.splitlines(), start=1)) or "(empty)")
@@ -107,7 +132,12 @@ def build_hint_prompt(task, code, level, cue, error="", output="", expected_outp
     if expected_output:
         parts.append(f"Expected output (for you only, never reveal it): {expected_output}")
     parts.append(f"Why Athena was called: {CUE_NOTES.get(cue, CUE_NOTES['same_error'])}")
-    parts.append(LEVEL_RULES[level])
+    if not code.strip():
+        parts.append("The student has not written any code yet.")
+    parts.append("If the student has a bug to fix (an error, or finished code with the wrong result), follow:\n"
+                 + LEVEL_RULES[level])
+    parts.append('If instead the program is just not finished yet (concept "getting started" or "next step"), '
+                 "follow this instead:\n" + BUILD_LEVEL_RULES[level])
     if past_hints:
         parts.append("Hints already shown (say something new, do not repeat them):\n"
                      + "\n".join(f"- {h}" for h in past_hints))

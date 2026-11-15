@@ -22,19 +22,51 @@ ERROR_RULES = [
 ]
 
 
-def detect_concept(error="", output="", expected_output=""):
+def _unquoted_text(code, error, expected_output):
+    """True when a print( holds words from the task's answer with no quotes around them.
+
+    print(Hello, Ithaca!) makes Python say "invalid syntax" or "NameError: name 'Hello'",
+    and neither message mentions quotes, so we look at the code itself.
+    """
+    if not code or not expected_output:
+        return False
+    if not re.search(r"SyntaxError: invalid syntax|NameError", error):
+        return False
+    answer_words = set(re.findall(r"[a-z]{2,}", expected_output.lower()))
+    for inside in re.findall(r"print\(([^)\n]*)", code):
+        if '"' in inside or "'" in inside:
+            continue  # this print already uses quotes
+        for word in re.findall(r"[A-Za-z_]\w*", inside):
+            made_as_variable = re.search(rf"^\s*{word}\s*=", code, re.M)
+            if word.lower() in answer_words and not made_as_variable:
+                return True
+    return False
+
+
+def detect_concept(error="", output="", expected_output="", code=""):
     """Guess the concept from the error message, or from the output when there is no error."""
+    if _unquoted_text(code, error, expected_output):
+        return "missing quotes"
     for pattern, concept in ERROR_RULES:
         if error and re.search(pattern, error):
             return concept
     if error:
         return "other"
+    if not _code_lines(code):
+        return "getting started"  # nothing written yet (comments don't count)
     got, want = _clean(output), _clean(expected_output)
     if want and got != want:
         if "None" in got.split() and "None" not in want:
             return "return vs print"  # a function forgot to return, so Python printed None
+        if not got or want.startswith(got):
+            return "next step"  # nothing printed yet, or only the first part of the answer
         return "wrong output"
     return "other"
+
+
+def _code_lines(code):
+    """The lines that do something: not blank, not a # comment."""
+    return [line for line in (code or "").splitlines() if line.strip() and not line.strip().startswith("#")]
 
 
 def _clean(text):
@@ -104,6 +136,16 @@ FALLBACK_HINTS = {
         "Read the task again, then read your output. Which part is different?",
         "Compare your output with the task, letter by letter and space by space. Spot the difference?",
     ],
+    "getting started": [
+        "Let's read the task together. What is the very first thing your program needs to do?",
+        "Look at the first part of the task. Which Python tool from class could do just that part?",
+        "Every program starts small, like print(\"Ahoy!\") to show one word. Can you write one line for the first part of your task?",
+    ],
+    "next step": [
+        "Your code runs, nice work! What part of the task is it still missing?",
+        "Read the task again and find the part your program does not do yet. That is your next step.",
+        "Programs grow one small step at a time: get the data, check it, then show the answer. Which step can you add next?",
+    ],
     "other": [
         "Let's read your code again slowly, one line at a time. What do you notice?",
         "Look at the line number in the message. What is happening on that line?",
@@ -118,7 +160,8 @@ assert set(FALLBACK_HINTS) == set(CONCEPTS), "FALLBACK_HINTS must cover exactly 
 def fallback_hint(snapshot, task, level, why="Gemini unavailable"):
     """Return (text, reason, concept) without calling Gemini."""
     error = snapshot.get("error", "")
-    concept = detect_concept(error, snapshot.get("output", ""), task.get("expected_output", ""))
+    concept = detect_concept(error, snapshot.get("output", ""), task.get("expected_output", ""),
+                             snapshot.get("code", ""))
     text = FALLBACK_HINTS[concept][level - 1]
     # Python puts the useful part of an error on its LAST line ("SyntaxError: expected ':'").
     last_line = error.strip().splitlines()[-1] if error.strip() else "no error message"

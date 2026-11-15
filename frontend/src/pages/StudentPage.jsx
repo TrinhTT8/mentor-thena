@@ -7,9 +7,19 @@ import HintBox from '../components/HintBox.jsx'
 import DebugLine from '../components/DebugLine.jsx'
 import usePyodide from '../usePyodide.js'
 import { useActivity } from '../activity.js'
-import { getTask, sendSnapshot } from '../api.js'
+import { getStatus, getTask, sendSnapshot } from '../api.js'
 
 const HEARTBEAT_MS = 10_000 // must match config.HEARTBEAT_SECONDS on the server
+
+// Which hint to show after the server answers.
+// A new hint replaces the old one. A green or Ithaca ship means the kid moved on,
+// so the old hint goes away (the server's /status does the same).
+// Yellow or red with no new hint: keep showing the last hint.
+function nextHint(currentHint, reply) {
+  if (reply.hint) return reply.hint
+  if (reply.status === 'green' || reply.status === 'ithaca') return null
+  return currentHint
+}
 
 // What the Run button says in each state.
 const RUN_LABELS = {
@@ -29,6 +39,7 @@ export default function StudentPage() {
   const [result, setResult] = useState({ output: '', error: '' })
   const [hint, setHint] = useState(null)
   const [thinking, setThinking] = useState(false)
+  const [shipStatus, setShipStatus] = useState('green')
   const { status, run } = usePyodide()
   const activity = useActivity()
 
@@ -36,13 +47,21 @@ export default function StudentPage() {
   // and last run result without restarting every time the kid types.
   const codeRef = useRef(code)
   const resultRef = useRef(result)
+  const runWaitingRef = useRef(false) // true while a Run is waiting for Athena
 
-  // 1. Load the student's task (title + instructions) when the page opens.
+  // 1. Load the task and the ship's current status (so a page reload keeps the hint).
   useEffect(() => {
     let cancelled = false
     getTask(id)
       .then((t) => { if (!cancelled) setTask(t) })
       .catch((err) => console.warn('Could not load the task', err))
+    getStatus(id)
+      .then((reply) => {
+        if (cancelled) return
+        setShipStatus(reply.status)
+        setHint(reply.hint)
+      })
+      .catch((err) => console.warn('Could not load the status', err))
     return () => { cancelled = true }
   }, [id])
 
@@ -52,7 +71,9 @@ export default function StudentPage() {
     if (!taskId) return
     let busy = false // skip a beat if the last one is still waiting for Athena
     const timer = setInterval(async () => {
-      if (busy) return
+      // Skip while a heartbeat or a Run is still waiting, so the server never
+      // works on two requests for this kid at once (that could give 2 hints).
+      if (busy || runWaitingRef.current) return
       busy = true
       try {
         const reply = await sendSnapshot({
@@ -64,7 +85,8 @@ export default function StudentPage() {
           error: resultRef.current.error,
           activity: activity.take(), // keys since the previous heartbeat, then reset
         })
-        if (reply.hint) setHint(reply.hint)
+        setShipStatus(reply.status)
+        setHint((current) => nextHint(current, reply))
       } catch (err) {
         console.warn('Heartbeat failed', err)
       } finally {
@@ -88,6 +110,7 @@ export default function StudentPage() {
     if (!task) return
 
     setThinking(true)
+    runWaitingRef.current = true
     try {
       const reply = await sendSnapshot({
         student_id: id,
@@ -97,10 +120,12 @@ export default function StudentPage() {
         output,
         error,
       })
-      if (reply.hint) setHint(reply.hint)
+      setShipStatus(reply.status)
+      setHint((current) => nextHint(current, reply))
     } catch (err) {
       console.warn('Run snapshot failed', err) // the kid still sees their output
     } finally {
+      runWaitingRef.current = false
       setThinking(false)
     }
   }
@@ -134,7 +159,9 @@ export default function StudentPage() {
         {RUN_LABELS[status]}
       </button>
       <OutputBox output={result.output} error={result.error} running={status === 'running'} />
-      <HintBox hint={hint} thinking={thinking} />
+      {shipStatus === 'ithaca'
+        ? <div className="ithaca-box">You reached Ithaca! Great sailing, your code works!</div>
+        : <HintBox hint={hint} thinking={thinking} />}
       {debug && <DebugLine peek={activity.peek} />}
     </main>
   )
