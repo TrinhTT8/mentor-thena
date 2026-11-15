@@ -5,6 +5,8 @@ import { python } from '@codemirror/lang-python'
 import OutputBox from '../components/OutputBox.jsx'
 import AthenaPanel from '../components/AthenaPanel.jsx'
 import QuestBox from '../components/QuestBox.jsx'
+import MyShip from '../components/MyShip.jsx'
+import Celebration from '../components/Celebration.jsx'
 import DebugLine from '../components/DebugLine.jsx'
 import usePyodide from '../usePyodide.js'
 import { useActivity } from '../activity.js'
@@ -44,6 +46,7 @@ export default function StudentPage() {
   const [hint, setHint] = useState(null)
   const [thinking, setThinking] = useState(false)
   const [shipStatus, setShipStatus] = useState('green')
+  const [celebrate, setCelebrate] = useState(false) // the Ithaca window
   const { status, run, stop } = usePyodide()
   const activity = useActivity()
 
@@ -125,6 +128,8 @@ export default function StudentPage() {
         output,
         error,
       })
+      // Celebrate only the moment the ship arrives (not on every reload afterwards).
+      if (reply.status === 'ithaca' && shipStatus !== 'ithaca') setCelebrate(true)
       setShipStatus(reply.status)
       setHint((current) => nextHint(current, reply))
     } catch (err) {
@@ -157,6 +162,7 @@ export default function StudentPage() {
     <div className="student-page">
       <header className="top-bar">
         <p className="logo">MentorThena</p>
+        <MyShip status={shipStatus} />
       </header>
 
       <main className="student-main">
@@ -200,10 +206,17 @@ export default function StudentPage() {
         </section>
 
         {/* Right column: Athena */}
-        <AthenaPanel hint={hint} thinking={thinking} atIthaca={shipStatus === 'ithaca'} />
+        <AthenaPanel
+          hint={hint}
+          thinking={thinking}
+          atIthaca={shipStatus === 'ithaca'}
+          teacherComing={shipStatus === 'red'}
+        />
 
         {debug && <DebugLine peek={activity.peek} />}
       </main>
+
+      <Celebration open={celebrate} onClose={() => setCelebrate(false)} />
 
       {/* The sea along the bottom of the page */}
       <div className="sea" aria-hidden="true">

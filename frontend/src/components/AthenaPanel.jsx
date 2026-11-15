@@ -2,7 +2,8 @@ const MAX_LEVEL = 3
 
 // The right-hand panel: Athena the owl and her speech bubble.
 // The hint object only has level, text and from_ships_log (reason/concept are teacher-only).
-export default function AthenaPanel({ hint, thinking, atIthaca }) {
+// teacherComing: the ship is red (Athena gave all 3 hints), so the teacher was told.
+export default function AthenaPanel({ hint, thinking, atIthaca, teacherComing }) {
   let bubble
   if (atIthaca) {
     bubble = <p className="hint-text">You reached Ithaca! Great sailing, your code works!</p>
@@ -29,6 +30,9 @@ export default function AthenaPanel({ hint, thinking, atIthaca }) {
         height="96"
         className={`athena-owl pixel-art${thinking ? ' is-thinking' : ''}`}
       />
+      {teacherComing && !atIthaca && (
+        <p className="teacher-note" role="status">Your teacher is coming to help! Keep trying while you wait.</p>
+      )}
       {/* key: a new hint remounts the bubble so it pops in again */}
       <div key={hint?.text ?? (thinking ? 'thinking' : 'idle')} className="hint-bubble" aria-live="polite">
         {bubble}

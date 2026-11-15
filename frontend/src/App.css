@@ -514,6 +514,120 @@ body {
 
 .hint-pip.is-on { background: var(--status-yellow); }
 
+/* ---------- The kid's ship (top bar) ---------- */
+.my-ship {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+/* Bobs on the waves in two frames; wiggles when hovered. */
+.my-ship-img {
+  width: 64px;
+  height: 64px;
+  animation: ship-bob 1.6s steps(2) infinite;
+}
+
+.my-ship:hover .my-ship-img { animation: ship-wiggle 0.4s steps(2) 3; }
+
+@keyframes ship-bob {
+  from { transform: translateY(0); }
+  to { transform: translateY(var(--space-1)); }
+}
+
+@keyframes ship-wiggle {
+  from { transform: rotate(-6deg); }
+  to { transform: rotate(6deg); }
+}
+
+/* Icon + word on the status color (never color alone) */
+.status-chip {
+  padding: var(--space-1) var(--space-3);
+  font: var(--text-small);
+  color: var(--on-accent);
+  border: var(--border-thin) solid var(--pixel-edge);
+  border-radius: var(--radius-chip);
+  white-space: nowrap;
+}
+
+.status-chip.is-green { background: var(--status-green); }
+.status-chip.is-yellow { background: var(--status-yellow); }
+.status-chip.is-ithaca { background: var(--ithaca); }
+
+/* ---------- Teacher is coming (ship is red) ---------- */
+.teacher-note {
+  width: 100%;
+  margin: 0;
+  padding: var(--space-3);
+  font: var(--text-body-lg);
+  color: var(--on-accent);
+  background: var(--status-yellow);
+  border: var(--border-thin) solid var(--pixel-edge);
+  border-radius: var(--radius-control);
+  text-align: center;
+}
+
+/* ---------- Ithaca celebration ---------- */
+.celebration {
+  width: min(480px, calc(100vw - 2 * var(--space-3)));
+  padding: var(--space-5);
+  text-align: center;
+  background: var(--parchment);
+  color: var(--on-accent);
+  border: var(--border-pixel) solid var(--gold);
+  border-radius: var(--radius-panel);
+  box-shadow: inset 0 0 0 var(--border-thin) var(--wood-light), var(--shadow-pixel-lg);
+}
+
+.celebration[open] { animation: bubble-pop 300ms steps(3); }
+
+.celebration::backdrop { background: color-mix(in srgb, var(--sea-bottom) 55%, transparent); }
+
+.celebration-art {
+  position: relative;
+  width: 100%;
+  height: 180px;
+  display: grid;
+  place-items: center;
+}
+
+.celebration-ship {
+  width: 160px;
+  height: 160px;
+  animation: ship-bob 1.2s steps(2) infinite;
+}
+
+.sparkle {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  animation: twinkle 1.2s steps(2) infinite;
+}
+
+@keyframes twinkle {
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 0.2; transform: scale(0.6); }
+}
+
+.celebration-title {
+  margin: var(--space-3) 0 var(--space-2);
+  font: var(--text-display);
+  font-size: clamp(20px, 5vw, 28px);
+  line-height: 1.3;
+  color: var(--heading);
+}
+
+.celebration-text {
+  margin: 0 0 var(--space-4);
+  font: var(--text-body-lg);
+}
+
+/* On a small screen the ship and its word stack */
+@media (max-width: 600px) {
+  .my-ship { flex-direction: column; gap: var(--space-1); }
+  .my-ship-img { width: 48px; height: 48px; }
+}
+
 .debug-line {
   margin: 0;
   font: var(--text-small);
