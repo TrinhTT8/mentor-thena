@@ -24,21 +24,6 @@ body {
 /* Pixel art stays sharp when it is scaled up. */
 .pixel-art { image-rendering: pixelated; }
 
-/* ---------- Panel: the framed card everything sits in ---------- */
-.panel {
-  background: var(--panel);
-  border: var(--border-soft) solid var(--frame);
-  border-radius: var(--radius-panel);
-  box-shadow: var(--shadow-pixel);
-  padding: var(--space-5);
-}
-
-.panel-title {
-  margin: 0 0 var(--space-4);
-  font: var(--text-title);
-  color: var(--heading);
-}
-
 /* Visible only to screen readers. */
 .sr-only {
   position: absolute;
@@ -49,9 +34,16 @@ body {
   white-space: nowrap;
 }
 
+/* Small pixel tags: EXAMPLE, EARLIER HINT */
+.tag-label {
+  font: var(--text-tag);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
 /* ---------- Stone pixel button ----------
    A stone face with a light strip on top and a dark band at the bottom (inset shadows),
-   a dark pixel outline, and a hard shadow. Hover lifts it; pressing sinks it 4px. */
+   a dark pixel outline, and a hard shadow. Hover lifts it; pressing sinks it. */
 .stone-button {
   --face: var(--stone);
   font: var(--text-label);
@@ -87,7 +79,7 @@ body {
 .stone-button:disabled { cursor: wait; opacity: 0.7; }
 
 .stone-button.is-small {
-  padding: var(--space-2) var(--space-4) calc(var(--space-2) + var(--space-1));
+  padding: var(--space-1) var(--space-4) var(--space-2);
   box-shadow:
     inset 0 var(--border-thin) 0 var(--stone-light),
     inset 0 calc(-1 * var(--border-pixel)) 0 var(--stone-dark);
@@ -102,9 +94,23 @@ body {
 .stone-button.is-small:active:not(:disabled) { transform: translateY(var(--border-thin)); }
 
 .stone-button.is-teal { --face: var(--teal); } /* Run: the one teal button per screen */
-.stone-button.is-gold { --face: var(--gold); } /* Next quest */
+.stone-button.is-gold { --face: var(--gold); } /* Hooray / Next quest */
 
-/* ---------- Student page layout ---------- */
+/* A plain outlined button for the dark code box (Reset) */
+.quiet-button {
+  padding: var(--space-1) var(--space-3);
+  font: var(--text-small);
+  color: var(--editor-dim);
+  background: transparent;
+  border: var(--border-thin) solid var(--editor-line);
+  border-radius: var(--radius-chip);
+  cursor: pointer;
+}
+
+.quiet-button:hover:not(:disabled) { color: var(--editor-ink); border-color: var(--editor-dim); }
+.quiet-button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ---------- Page layout ---------- */
 .student-page {
   position: relative;
   isolation: isolate;
@@ -145,11 +151,11 @@ body {
 .logo {
   margin: 0;
   font: var(--text-display);
-  font-size: clamp(20px, 3vw, 32px);
+  font-size: clamp(32px, 4vw, 48px);
   color: var(--heading);
 }
 
-/* Wide screens: quest on top, the code box left, Athena right.
+/* Wide screens: quest banner across the top, the code box left, Athena right.
    Narrow screens: everything in one column. */
 .student-main {
   flex: 1;
@@ -158,118 +164,99 @@ body {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-template-areas: "quest" "code" "athena";
-  gap: var(--space-5);
+  gap: var(--space-4);
   align-content: start;
 }
 
 @media (min-width: 900px) {
   .student-main {
-    grid-template-columns: minmax(0, 1fr) clamp(300px, 28vw, 420px);
+    grid-template-columns: minmax(0, 1fr) clamp(300px, 26vw, 400px);
     grid-template-areas:
-      "quest  ."
+      "quest  quest"
       "code   athena";
   }
 }
 
-.quest-box { grid-area: quest; }
+.quest-banner { grid-area: quest; }
 .ide { grid-area: code; }
 .athena-panel { grid-area: athena; }
 
-/* The sea: pixel waves, then deep navy water to the bottom of the page. */
-.sea {
-  background: linear-gradient(to bottom, var(--sea-top), var(--sea-bottom));
-  min-height: 96px;
-}
-
+/* The waves along the bottom of the page: only the wave tile, no extra water under it.
+   The tile is scaled up with the screen (it keeps its shape) and repeats across. */
 .wave-border {
-  height: 56px;
-  margin-top: -1px;
-  background: var(--sea-deep) url('/pixel/wave-border.svg') repeat-x;
-  background-size: 128px 56px;
+  height: clamp(72px, 8vw, 120px);
+  background: url('/pixel/wave-border.svg') repeat-x left bottom;
+  background-size: auto 100%;
   image-rendering: pixelated;
 }
 
-/* ---------- Quest box: a game-style quest log ----------
-   A wooden tab on top, a parchment card in a wooden frame, a progress bar,
-   and one quest row: scroll icon, details, status badge. */
-.quest-box { display: flex; flex-direction: column; }
-
-.quest-tabs {
-  display: flex;
-  padding-left: var(--space-4);
-}
-
-.quest-tab {
-  padding: var(--space-2) var(--space-4);
-  background: var(--parchment);
-  color: var(--on-accent);
-  font: var(--text-label);
-  border: var(--border-soft) solid var(--wood-frame);
-  border-bottom: none;
-  border-radius: var(--radius-control) var(--radius-control) 0 0;
-  position: relative;
-  top: var(--border-soft);  /* sits on the frame so the tab and card join */
-}
-
-.quest-frame {
-  display: grid;
-  gap: var(--space-3);
-  padding: var(--space-4);
-  background: var(--parchment);
-  color: var(--on-accent);
-  border: var(--border-soft) solid var(--wood-frame);
-  border-radius: var(--radius-panel);
-  box-shadow: inset 0 0 0 var(--border-thin) var(--wood-light), var(--shadow-pixel);
-}
-
-/* Progress: a chunky bar with a label, like the reference's 1/6 bar */
-.quest-progress {
+/* ---------- The kid's ship chip (top right) ---------- */
+.my-ship {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3);
+  background: var(--panel);
+  border: var(--border-soft) solid var(--border);
+  box-shadow: var(--shadow-pixel);
 }
 
-.quest-bar {
-  flex: 1;
-  height: var(--space-3);
-  background: var(--parchment-row);
-  border: var(--border-thin) solid var(--wood-frame);
-  border-radius: var(--radius-chip);
-  overflow: hidden;
+/* Bobs gently on the waves. */
+.my-ship-img {
+  width: 40px;
+  height: 40px;
+  animation: ship-bob 2.4s ease-in-out infinite;
 }
 
-.quest-bar-fill {
-  height: 100%;
-  background: var(--status-green);
-  box-shadow: inset 0 calc(-1 * var(--space-1)) 0 var(--shadow-color);
-  transition: width 400ms steps(4);
+@keyframes ship-bob {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-3px) rotate(2deg); }
 }
 
-.quest-progress-label {
+.my-ship-word {
   font: var(--text-small);
   white-space: nowrap;
 }
 
-/* The quest row */
-.quest-item {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: start;
-  gap: var(--space-4);
-  padding: var(--space-4);
-  background: var(--parchment-row);
-  border: var(--border-thin) solid var(--wood-light);
-  border-radius: var(--radius-control);
+.status-square {
+  width: var(--space-3);
+  height: var(--space-3);
+  border: var(--border-thin) solid var(--pixel-edge);
 }
 
-.quest-icon { width: 64px; height: 64px; }
+.status-square.is-green { background: var(--status-green); }
+.status-square.is-yellow { background: var(--status-yellow); }
+.status-square.is-ithaca { background: var(--ithaca); }
 
-.quest-body { display: grid; gap: var(--space-2); }
+/* ---------- Quest banner ---------- */
+.quest-banner {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: var(--parchment);
+  color: var(--on-accent);
+  border: var(--border-soft) solid var(--wood-frame);
+  border-radius: var(--radius-panel);
+  box-shadow: inset 0 0 0 var(--border-thin) var(--wood-light), 6px 6px 0 var(--wood-frame);
+}
+
+.quest-icon { width: 56px; height: 56px; }
+
+.quest-body { display: grid; gap: var(--space-1); }
+
+.quest-heading {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
 
 .quest-title {
   margin: 0;
   font: var(--text-title);
-  color: var(--on-accent);
+  color: var(--heading);
 }
 
 .quest-description {
@@ -277,12 +264,34 @@ body {
   font: var(--text-body-lg);
 }
 
+/* `print` in the instructions */
+.code-chip {
+  padding: 0 var(--space-1);
+  font: var(--text-code);
+  font-size: 0.9em;
+  background: var(--parchment-row);
+  border: 1px solid var(--wood-light);
+}
+
+/* Progress badge next to the title */
+.quest-status {
+  padding: 0 var(--space-2);
+  font: var(--text-small);
+  color: var(--on-accent);
+  background: var(--stone);
+  border: var(--border-thin) solid var(--pixel-edge);
+  white-space: nowrap;
+}
+
+.quest-status.is-in-progress { background: var(--status-yellow); }
+.quest-status.is-completed { background: var(--status-green); }
+
+/* The teacher's example, on the right */
 .quest-example {
   display: grid;
   gap: var(--space-1);
+  justify-items: start;
 }
-
-.quest-example-label { font: var(--text-small); }
 
 .quest-example pre {
   margin: 0;
@@ -290,40 +299,22 @@ body {
   background: var(--editor-bg);
   color: var(--editor-ink);
   font: var(--text-code);
-  border-radius: var(--radius-chip);
   white-space: pre-wrap;
 }
 
-/* Status badge on the right: amber while in progress, green when completed */
-.quest-status {
-  align-self: center;
-  padding: var(--space-2) var(--space-3);
-  font: var(--text-label);
-  color: var(--on-accent);
-  background: var(--stone);
-  border: var(--border-thin) solid var(--pixel-edge);
-  border-radius: var(--radius-chip);
-  white-space: nowrap;
+@media (max-width: 700px) {
+  .quest-banner { grid-template-columns: auto minmax(0, 1fr); }
+  .quest-example { grid-column: 1 / -1; }
+  .quest-icon { width: 40px; height: 40px; }
 }
 
-.quest-status.is-in-progress { background: var(--status-yellow); }
-.quest-status.is-completed { background: var(--status-green); }
-
-/* Narrow screens: the status moves under the details */
-@media (max-width: 600px) {
-  .quest-item { grid-template-columns: auto minmax(0, 1fr); }
-  .quest-status { grid-column: 2; justify-self: start; }
-  .quest-icon { width: 48px; height: 48px; }
-}
-
-/* ---------- Code box (LeetCode style): toolbar, editor, Output tab, output ----------
-   One dark box with thin dividers. Its colors are the opposite of the page. */
+/* ---------- Code box: file tab bar, editor, Result/Goal bar, output ---------- */
 .ide {
   display: flex;
   flex-direction: column;
   background: var(--editor-bg);
   color: var(--editor-ink);
-  border: var(--border-soft) solid var(--frame);
+  border: var(--border-soft) solid var(--border);
   border-radius: var(--radius-panel);
   box-shadow: var(--shadow-pixel);
   overflow: hidden;
@@ -339,15 +330,37 @@ body {
   border-bottom: 1px solid var(--editor-line);
 }
 
-.ide-language {
-  font: var(--text-small);
-  color: var(--editor-ink);
-}
-
+.ide-file,
+.ide-tabs,
 .ide-actions {
   display: flex;
   align-items: center;
   gap: var(--space-3);
+}
+
+/* A tab: the active one is gold with a gold bar under it (a bar, not a text underline). */
+.ide-tab {
+  padding: var(--space-1) 0;
+  font: var(--text-tag);
+  color: var(--editor-dim);
+  background: none;
+  border: none;
+  border-bottom: var(--border-thin) solid transparent;
+  cursor: pointer;
+}
+
+.ide-tab.is-active {
+  color: var(--gold);
+  border-bottom-color: var(--gold);
+}
+
+span.ide-tab { cursor: default; }
+
+.ide-chip {
+  padding: 0 var(--space-2);
+  font: var(--text-small);
+  color: var(--editor-dim);
+  border: 1px solid var(--editor-line);
 }
 
 .run-tip {
@@ -376,34 +389,25 @@ body {
 
 .ide-editor .cm-scroller { font-family: var(--font-code); }
 
-/* The Output tab row: a divider line on top, like LeetCode's split. */
-.ide-tabs {
-  border-top: 1px solid var(--editor-line);
+/* The line Python complained about: a red tint and a red bar on the left */
+.ide-editor .cm-error-line {
+  background: var(--editor-error-line);
+  box-shadow: inset 3px 0 0 var(--editor-error);
 }
 
-.ide-tab {
-  margin: 0;
-  padding-bottom: var(--space-1);
-  font: var(--text-small);
-  color: var(--editor-ink);
-  border-bottom: var(--border-thin) solid var(--editor-ink);
-}
+.ide-bottom-bar { border-top: 1px solid var(--editor-line); }
 
-.output-summary {
-  font: var(--text-small);
-  color: var(--editor-dim);
-}
-
-.output-summary.is-problem { color: var(--editor-error); }
-.output-summary.is-done { color: var(--status-green); }
-
-/* ---------- Output box ---------- */
-.output-box {
+/* Output (Result tab) and the Goal tab */
+.output-box,
+.goal-box {
   min-height: 140px;
   margin: 0;
-  padding: var(--space-4);
+  padding: var(--space-3) var(--space-4);
   background: var(--editor-bg);
   color: var(--editor-ink);
+}
+
+.output-box {
   font: var(--text-code);
   white-space: pre-wrap;
   overflow-wrap: anywhere;
@@ -416,68 +420,96 @@ body {
   margin-bottom: var(--space-2);
   font: var(--text-body);
   font-weight: 800;
+  color: var(--editor-error);
 }
 
 .output-error { color: var(--editor-error); }
+
+.goal-box p { margin: 0 0 var(--space-3); font: var(--text-body-lg); }
+.goal-box pre { margin: 0; font: var(--text-code); }
 
 /* ---------- Athena panel ---------- */
 .athena-panel {
   display: flex;
   flex-direction: column;
+  gap: var(--space-3);
+  align-self: stretch;
+  padding: var(--space-4);
+  background: var(--panel);
+  border: var(--border-soft) solid var(--frame);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-pixel);
+}
+
+.athena-header {
+  display: flex;
   align-items: center;
   gap: var(--space-3);
-  align-self: start;
 }
 
-.athena-panel .panel-title { align-self: flex-start; }
+.athena-name {
+  margin: 0;
+  font: var(--text-title);
+  color: var(--heading);
+}
 
-/* The owl bobs in two frames (steps, not smooth), faster while she thinks. */
+.athena-role {
+  margin: 0;
+  font: var(--text-small);
+  color: var(--ink-dim);
+}
+
+/* The owl floats smoothly up and down with a gentle sway.
+   While she thinks, she tilts her head side to side. */
 .athena-owl {
-  width: 96px;
-  height: 96px;
-  animation: owl-bob 1.2s steps(2) infinite;
+  width: 64px;
+  height: 64px;
+  flex-shrink: 0;
+  transform-origin: 50% 90%;
+  animation: owl-float 3s ease-in-out infinite;
 }
 
-.athena-owl.is-thinking { animation-duration: 0.5s; }
+.athena-owl.is-thinking { animation: owl-think 1.4s ease-in-out infinite; }
 
-@keyframes owl-bob {
-  from { transform: translateY(0); }
-  to { transform: translateY(calc(-1 * var(--space-1))); }
+@keyframes owl-float {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25% { transform: translateY(-3px) rotate(-3deg); }
+  50% { transform: translateY(-6px) rotate(0deg); }
+  75% { transform: translateY(-3px) rotate(3deg); }
 }
 
-/* The speech bubble, with a small pixel tail pointing up at the owl. */
-.hint-bubble {
-  position: relative;
-  width: 100%;
-  padding: var(--space-3);
-  background: var(--sail);
-  color: var(--on-accent);
-  border: var(--border-soft) solid var(--frame);
-  border-radius: var(--radius-control);
-  box-shadow: var(--shadow-pixel);
-  padding: var(--space-4);
-  animation: bubble-pop 240ms steps(3);
+@keyframes owl-think {
+  0%, 100% { transform: rotate(0deg); }
+  30% { transform: rotate(-10deg); }
+  70% { transform: rotate(10deg); }
 }
 
-.hint-bubble::before {
-  content: "";
-  position: absolute;
-  top: calc(-3 * var(--space-1));
-  left: calc(50% - var(--space-2));
-  width: var(--space-3);
-  height: var(--space-2);
-  background: var(--frame);
-  clip-path: polygon(50% 0, 100% 100%, 0 100%);
-}
+/* The current hint: a bold amber card with a hard shadow; it pops in. */
+.hint-slot { animation: card-pop 260ms ease-out; }
 
-@keyframes bubble-pop {
-  from { transform: scale(0.85); opacity: 0; }
+@keyframes card-pop {
+  from { transform: scale(0.92); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
 }
+
+.hint-card {
+  padding: var(--space-3);
+  color: var(--on-accent);
+  border: var(--border-soft) solid var(--pixel-edge);
+  border-radius: var(--radius-control);
+  box-shadow: var(--shadow-pixel);
+}
+
+.hint-card.is-hint { background: var(--status-yellow); }
+.hint-card.is-thinking,
+.hint-card.is-idle { background: var(--sail); }
+.hint-card.is-done { background: var(--status-green); }
 
 .hint-text {
   margin: 0;
   font: var(--text-hint);
+  font-size: 20px;
+  line-height: 28px;
 }
 
 .hint-idle {
@@ -498,9 +530,10 @@ body {
   75% { content: "..."; }
 }
 
-/* Hint level: 3 square pips, filled up to the current level. */
+/* Hint level: 3 square pips, filled up to the current level, plus "Hint 2 of 3". */
 .hint-pips {
   display: flex;
+  align-items: center;
   gap: var(--space-1);
   margin-top: var(--space-3);
 }
@@ -512,59 +545,50 @@ body {
   border-radius: var(--radius-chip);
 }
 
-.hint-pip.is-on { background: var(--status-yellow); }
+.hint-pip.is-on { background: var(--pixel-edge); }
 
-/* ---------- The kid's ship (top bar) ---------- */
-.my-ship {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-}
-
-/* Bobs on the waves in two frames; wiggles when hovered. */
-.my-ship-img {
-  width: 64px;
-  height: 64px;
-  animation: ship-bob 1.6s steps(2) infinite;
-}
-
-.my-ship:hover .my-ship-img { animation: ship-wiggle 0.4s steps(2) 3; }
-
-@keyframes ship-bob {
-  from { transform: translateY(0); }
-  to { transform: translateY(var(--space-1)); }
-}
-
-@keyframes ship-wiggle {
-  from { transform: rotate(-6deg); }
-  to { transform: rotate(6deg); }
-}
-
-/* Icon + word on the status color (never color alone) */
-.status-chip {
-  padding: var(--space-1) var(--space-3);
+.hint-count {
+  margin-left: var(--space-2);
   font: var(--text-small);
-  color: var(--on-accent);
-  border: var(--border-thin) solid var(--pixel-edge);
-  border-radius: var(--radius-chip);
-  white-space: nowrap;
 }
 
-.status-chip.is-green { background: var(--status-green); }
-.status-chip.is-yellow { background: var(--status-yellow); }
-.status-chip.is-ithaca { background: var(--ithaca); }
+/* Earlier hints: quieter, in a dashed box */
+.earlier-hints {
+  display: grid;
+  gap: var(--space-2);
+  color: var(--ink-dim);
+}
 
-/* ---------- Teacher is coming (ship is red) ---------- */
-.teacher-note {
-  width: 100%;
+.earlier-hint {
   margin: 0;
   padding: var(--space-3);
-  font: var(--text-body-lg);
+  font: var(--text-body);
+  color: var(--ink);
+  border: var(--border-thin) dashed var(--wood-light);
+}
+
+/* Encouragement at the bottom */
+.athena-tip {
+  margin-top: auto;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background: var(--parchment);
+  border: var(--border-thin) solid var(--wood-light);
+}
+
+.athena-tip p { margin: 0; font: var(--text-small); }
+
+/* Teacher is coming (ship is red) */
+.teacher-note {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  font: var(--text-body);
+  font-weight: 800;
   color: var(--on-accent);
-  background: var(--status-yellow);
+  background: var(--stone-light);
   border: var(--border-thin) solid var(--pixel-edge);
-  border-radius: var(--radius-control);
-  text-align: center;
 }
 
 /* ---------- Ithaca celebration ---------- */
@@ -579,7 +603,7 @@ body {
   box-shadow: inset 0 0 0 var(--border-thin) var(--wood-light), var(--shadow-pixel-lg);
 }
 
-.celebration[open] { animation: bubble-pop 300ms steps(3); }
+.celebration[open] { animation: card-pop 300ms ease-out; }
 
 .celebration::backdrop { background: color-mix(in srgb, var(--sea-bottom) 55%, transparent); }
 
@@ -594,14 +618,14 @@ body {
 .celebration-ship {
   width: 160px;
   height: 160px;
-  animation: ship-bob 1.2s steps(2) infinite;
+  animation: ship-bob 2s ease-in-out infinite;
 }
 
 .sparkle {
   position: absolute;
   width: 20px;
   height: 20px;
-  animation: twinkle 1.2s steps(2) infinite;
+  animation: twinkle 1.2s ease-in-out infinite alternate;
 }
 
 @keyframes twinkle {
@@ -612,8 +636,8 @@ body {
 .celebration-title {
   margin: var(--space-3) 0 var(--space-2);
   font: var(--text-display);
-  font-size: clamp(20px, 5vw, 28px);
-  line-height: 1.3;
+  font-size: clamp(36px, 7vw, 48px);
+  line-height: 1.1;
   color: var(--heading);
 }
 
@@ -622,10 +646,10 @@ body {
   font: var(--text-body-lg);
 }
 
-/* On a small screen the ship and its word stack */
+/* ---------- Small screens ---------- */
 @media (max-width: 600px) {
-  .my-ship { flex-direction: column; gap: var(--space-1); }
-  .my-ship-img { width: 48px; height: 48px; }
+  .my-ship-word { display: none; } /* the square and ship still show the status */
+  .my-ship { padding: var(--space-1) var(--space-2); }
 }
 
 .debug-line {
