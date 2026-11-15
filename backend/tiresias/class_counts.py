@@ -1,10 +1,8 @@
-"""Tiresias (Person A part): count stuck students by concept for a class.
+"""Tiresias: count stuck students by concept for a class.
 
-The counts go to Person B's write_tip(), which turns them into one short
-tip for the teacher. The result is cached in classes.latest_insight.
-
-Person B's write_tip() lives in tiresias/insights.py. Do not put it here,
-so we never edit the same file.
+The counts go to write_tip() in tiresias/insights.py, which turns them
+into one short tip for the teacher. The result is cached in
+classes.latest_insight.
 """
 
 from datetime import datetime, timezone
@@ -12,10 +10,7 @@ from datetime import datetime, timezone
 import config
 from db import students, classes
 from seamap.dashboard import to_iso, seconds_since
-# STUB: write_tip is still a stub until Person B adds it to tiresias/insights.py.
-# TODO: swap for Person B's real function:
-#       from tiresias.insights import write_tip
-from person_b_stubs import write_tip
+from tiresias.insights import write_tip
 
 CALM_SEA_TIP = "Everyone is sailing fine right now."
 
@@ -63,7 +58,7 @@ def simple_tip(counts):
 
 
 def make_tip(counts):
-    """Ask Person B's write_tip for a teacher tip. Never fails."""
+    """Ask write_tip for a teacher tip. Never fails."""
     try:
         return write_tip(counts)
     except Exception:

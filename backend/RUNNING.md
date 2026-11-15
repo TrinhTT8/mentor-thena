@@ -25,7 +25,9 @@ Create the indexes (safe to run again):
 ```
 python create_indexes.py
 ```
-Prints the index names for `snapshots`, `students`, and `hints`.
+Prints the index names for `snapshots`, `students`, and `hints`, then creates
+the Ship's Log vector index `ship_log_vector` (or says it already exists).
+A new vector index needs about a minute in Atlas before searches work.
 
 Does Gemini answer? (optional)
 ```
@@ -53,6 +55,17 @@ Gemini on/off: `USE_GEMINI` in `.env`.
 Restart Flask (Ctrl+C, then `python app.py`) after changing `.env`.
 The snapshot route calls Athena's real `get_hint`. With `USE_GEMINI=0`
 the hints come from `athena/fallbacks.py`.
+
+Ship's Log (only with `USE_GEMINI=1`):
+- When a student reaches Ithaca after a Gemini hint for an error, that hint
+  is saved in `ship_log` (1 embedding request; 0 if the same hint is
+  already there, it just counts `times_helped` up)
+- Before writing a new hint for an error, Athena searches `ship_log` for a
+  similar past bug (1 embedding request). If one is found, the hint has
+  `"from_ships_log": true`
+- Bugs without an error message (wrong output) are not used
+- Demo reset and `seed_demo.py` keep the Ship's Log: it remembers
+  across sessions
 
 
 ## Seed the demo class and run the bot simulator
@@ -219,13 +232,12 @@ curl http://localhost:5000/api/seamap/c1
 - `siren_blocks`: how many of this class's hints Siren Guard blocked,
   since the last seed or reset
 
-Tiresias tip (real counts; the tip text is still a stub until Person B's
-`write_tip` is merged)
+Tiresias tip (real)
 ```
 curl http://localhost:5000/api/insight/c1
 ```
 ```json
-{"tip": "1 student is stuck on indentation. Try a 1-minute mini lesson.",
+{"tip": "1 student is stuck on indentation. Show an if with two lines inside it, and trace the pushed-in lines with your finger. Also stuck: loop runs wrong number of times (1), missing colon (1).",
  "counts": [{"concept": "indentation", "students": 1},
             {"concept": "loop runs wrong number of times", "students": 1},
             {"concept": "missing colon", "students": 1}],
@@ -238,6 +250,10 @@ curl http://localhost:5000/api/insight/c1
 - After 60 s it counts again. The tip is only rewritten (one `write_tip`
   call) when the counts changed
 - Nobody stuck: `{"tip": "Everyone is sailing fine right now.", "counts": [], ...}`
+- The tip: the biggest problem gets a 1-minute mini lesson idea, the others
+  are listed after "Also stuck:". With `USE_GEMINI=1` Gemini writes the
+  mini lesson idea; with `USE_GEMINI=0` (or if Gemini fails) it comes from
+  a ready-made list in `tiresias/insights.py`
 
 Teacher marks a student as helped (real)
 ```

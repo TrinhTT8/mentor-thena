@@ -8,10 +8,9 @@ import config
 from argus import watcher
 from athena.hint_giver import get_hint
 from db import students, tasks, snapshots, hints
-# STUB: save_helpful is still a stub until Person B writes ships_log/memory.py.
-# TODO: swap for Person B's real function
-from person_b_stubs import save_helpful
 from seamap import dashboard
+from ships_log import memory
+from ships_log.memory import save_helpful
 from tiresias import class_counts
 
 app = Flask(__name__)
@@ -183,6 +182,10 @@ def make_hint(student, task, snapshot, level, cue, now):
         "reason": hint["reason"],
         "concept": hint["concept"],
         "cue": cue,
+        # The bug at hint time, for the Ship's Log if this hint helps.
+        # Only a few lines of code, not the whole program.
+        "error": snapshot["error"],
+        "code_summary": memory.code_summary(snapshot["code"], snapshot["error"]),
         "from_ships_log": hint["from_ships_log"],
         "siren_blocked": hint["siren_blocked"],
         "source": hint["source"],
