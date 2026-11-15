@@ -121,11 +121,12 @@ def post_snapshot():
 
         cue = watcher.find_heartbeat_cue(activity, recent_activity)
 
-    # Run cues (error, wrong output) get the next hint right away.
-    # Heartbeat cues (idle, churn) wait for the cooldown.
+    # Run cues (error, wrong output) and churn get the next hint right away.
+    # Idle waits for the cooldown only if the kid has not touched
+    # a key or the cursor since the last hint.
     cooling_down = False
-    if event == "heartbeat":
-        cooling_down = watcher.in_cooldown(student, now)
+    if event == "heartbeat" and cue == "idle":
+        cooling_down = watcher.in_idle_cooldown(student, activity, now)
 
     # Argus found a cue, and it is not waiting for the cooldown.
     new_hint = None
@@ -144,6 +145,11 @@ def post_snapshot():
             changes["last_hint_at"] = now
             changes["stuck_reason"] = new_hint["reason"]
             changes["concept"] = new_hint["concept"]
+
+            # Empty the churn window, so the same typing and deleting
+            # does not give a second churn hint on the next heartbeat.
+            if cue == "churn":
+                changes["recent_activity"] = []
 
     changes["status"] = status
     changes["hint_level"] = hint_level

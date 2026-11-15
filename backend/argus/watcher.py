@@ -6,17 +6,21 @@ write MongoDB. The snapshot route in app.py saves what they return.
 The 4 cues (the numbers live in config.STUCK_RULES):
 - same_error:   the same error on 1 run
 - wrong_output: the code runs, but the output is wrong on 1 run
-- idle:         no key press AND no cursor move for 12 seconds
-- churn:        typing and deleting a lot over the last 2 heartbeats (20 s)
+- idle:         no key press AND no cursor move for idle_seconds
+- churn:        typing and deleting a lot over the churn window
+
+Run and churn hints never wait. An idle hint waits for the cooldown only
+when the kid has not touched a key or the cursor since the last hint.
 """
 
-from datetime import timezone
+from datetime import timedelta, timezone
 
 import config
 
 RULES = config.STUCK_RULES
 
-# How many heartbeats make up the churn window (20 s / 10 s = 2).
+# How many heartbeats make up the churn window
+# (churn_window_seconds / HEARTBEAT_SECONDS, for example 20 s / 10 s = 2).
 CHURN_HEARTBEATS = RULES["churn_window_seconds"] // config.HEARTBEAT_SECONDS
 
 
@@ -189,7 +193,7 @@ def find_heartbeat_cue(activity, recent_activity):
 def in_cooldown(student, now):
     """True when the student got a hint less than the cooldown ago.
 
-    The cooldown is in config.STUCK_RULES (20 seconds).
+    The cooldown is hint_cooldown_seconds in config.STUCK_RULES.
     """
     last_hint_at = student.get("last_hint_at")
     if last_hint_at is None:
@@ -201,3 +205,32 @@ def in_cooldown(student, now):
 
     seconds_since_hint = (now - last_hint_at).total_seconds()
     return seconds_since_hint < RULES["hint_cooldown_seconds"]
+
+
+def in_idle_cooldown(student, activity, now):
+    """True when an idle hint must wait for the cooldown.
+
+    The idle stretch starts at the last key press or cursor move.
+    - The last hint came BEFORE that moment: the kid touched something
+      after the hint, so no wait (idle_seconds is enough).
+    - The last hint came DURING this idle stretch: the kid has not
+      touched anything since, so wait hint_cooldown_seconds after it.
+    """
+    last_hint_at = student.get("last_hint_at")
+    if last_hint_at is None:
+        return False
+
+    # MongoDB gives back dates without a time zone, but they are UTC.
+    if last_hint_at.tzinfo is None:
+        last_hint_at = last_hint_at.replace(tzinfo=timezone.utc)
+
+    # The idle stretch began at the newer of the two: last key or last cursor move.
+    seconds_since_key = activity.get("seconds_since_last_key", 0)
+    seconds_since_cursor = activity.get("seconds_since_cursor_move", 0)
+    seconds_idle = min(seconds_since_key, seconds_since_cursor)
+    idle_started_at = now - timedelta(seconds=seconds_idle)
+
+    if last_hint_at < idle_started_at:
+        return False
+
+    return in_cooldown(student, now)

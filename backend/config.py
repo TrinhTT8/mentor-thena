@@ -19,7 +19,7 @@ STUCK_RULES = {
     "churn_min_keys": 12,        # ignore tiny edits
     "same_error_runs": 1,        # same error N runs in a row
     "wrong_output_runs": 1,      # runs fine but wrong output N times
-    "hint_cooldown_seconds": 30, # min time between two idle or type-and-delete hints (Run hints don't wait)
+    "hint_cooldown_seconds": 30, # wait before another idle hint when the kid has not touched a key or the mouse since the last hint (Run and churn hints don't wait)
 }
 
 # Frontend sends a heartbeat this often (seconds).

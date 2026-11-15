@@ -176,7 +176,9 @@ The next stuck cue after level 3 turns the ship red (no new hint;
 A run with no error but the wrong output also gets a hint on the first run.
 A new error or a wrong output does not reset the hint level.
 Only Ithaca or the teacher's resolve does.
-The cooldown (30 s) only applies to idle and type-and-delete heartbeats.
+Run hints and type-and-delete hints never wait.
+After a type-and-delete hint, the window is emptied, so only new
+typing and deleting counts toward the next one.
 (The numbers live in `config.STUCK_RULES`.)
 
 Reach Ithaca: run with the right output
@@ -207,6 +209,11 @@ curl -X POST http://localhost:5000/api/snapshot -H "Content-Type: application/js
 ```json
 {"status": "yellow", "hint": {"level": 1, "text": "...", "from_ships_log": false}}
 ```
+The idle clock starts at the last key press or cursor move.
+- The kid touched a key or the cursor after the last hint: the idle
+  hint comes after 7 s of idle, even right after a Run hint.
+- The kid has not touched anything since the last hint: the next
+  idle hint waits 30 s after that hint (`hint_cooldown_seconds`).
 
 Snapshot without student_id (error 400)
 ```
