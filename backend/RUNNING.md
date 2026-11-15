@@ -219,17 +219,25 @@ curl http://localhost:5000/api/seamap/c1
 - `siren_blocks`: how many of this class's hints Siren Guard blocked,
   since the last seed or reset
 
-Tiresias tip (STUB until Tiresias is built)
+Tiresias tip (real counts; the tip text is still a stub until Person B's
+`write_tip` is merged)
 ```
 curl http://localhost:5000/api/insight/c1
 ```
 ```json
-{"tip": "2 students are stuck on missing colons. Try a 1-minute mini lesson on if lines.",
- "counts": [{"concept": "missing colon", "students": 2},
-            {"concept": "indentation", "students": 1},
-            {"concept": "typo in print", "students": 1}],
- "updated_at": "2026-11-15T00:18:46.267087+00:00"}
+{"tip": "1 student is stuck on indentation. Try a 1-minute mini lesson.",
+ "counts": [{"concept": "indentation", "students": 1},
+            {"concept": "loop runs wrong number of times", "students": 1},
+            {"concept": "missing colon", "students": 1}],
+ "updated_at": "2026-11-15T02:29:17.004000+00:00"}
 ```
+- `counts`: the class's yellow and red ships grouped by concept,
+  biggest group first
+- Cached for 60 seconds: calls within 60 s return the same answer
+  (same `updated_at`)
+- After 60 s it counts again. The tip is only rewritten (one `write_tip`
+  call) when the counts changed
+- Nobody stuck: `{"tip": "Everyone is sailing fine right now.", "counts": [], ...}`
 
 Teacher marks a student as helped (real)
 ```

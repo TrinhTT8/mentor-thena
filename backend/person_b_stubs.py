@@ -58,8 +58,10 @@ def write_tip(counts):
 
     # Use the first concept in the list for the fake tip.
     top = counts[0]
-    tip = (
-        f"{top['students']} students are stuck on {top['concept']}. "
-        "Try a 1-minute mini lesson."
-    )
+    if top["students"] == 1:
+        stuck_text = f"1 student is stuck on {top['concept']}."
+    else:
+        stuck_text = f"{top['students']} students are stuck on {top['concept']}."
+
+    tip = stuck_text + " Try a 1-minute mini lesson."
     return tip

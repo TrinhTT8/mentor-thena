@@ -7,11 +7,12 @@ from flask import Flask, jsonify, request
 import config
 from argus import watcher
 from athena.hint_giver import get_hint
-from db import students, tasks, snapshots, hints, classes
+from db import students, tasks, snapshots, hints
 # STUB: save_helpful is still a stub until Person B writes ships_log/memory.py.
 # TODO: swap for Person B's real function
 from person_b_stubs import save_helpful
 from seamap import dashboard
+from tiresias import class_counts
 
 app = Flask(__name__)
 
@@ -239,33 +240,12 @@ def get_seamap(class_id):
 
 @app.get("/api/insight/<class_id>")
 def get_insight(class_id):
-    """Send the Tiresias tip for the teacher."""
-    class_doc = classes.find_one({"_id": class_id})
-    if class_doc is None:
+    """Send the Tiresias tip for the teacher (cached for 60 seconds)."""
+    result = class_counts.get_insight(class_id)
+    if result is None:
         return jsonify({"error": "class not found"}), 404
 
-    insight = class_doc.get("latest_insight")
-
-    if insight is not None:
-        result = {
-            "tip": insight.get("tip"),
-            "counts": insight.get("counts", []),
-            "updated_at": dashboard.to_iso(insight.get("updated_at")),
-        }
-        return jsonify(result)
-
-    # STUB: fake tip until Tiresias is built (Task 6).
-    fake_insight = {
-        "tip": "2 students are stuck on missing colons. "
-               "Try a 1-minute mini lesson on if lines.",
-        "counts": [
-            {"concept": "missing colon", "students": 2},
-            {"concept": "indentation", "students": 1},
-            {"concept": "typo in print", "students": 1},
-        ],
-        "updated_at": dashboard.to_iso(datetime.now(timezone.utc)),
-    }
-    return jsonify(fake_insight)
+    return jsonify(result)
 
 
 @app.post("/api/resolve/<student_id>")
