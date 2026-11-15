@@ -1,4 +1,6 @@
-"""STUB versions of Person B's functions (Athena, Ship's Log, Tiresias tip).
+"""STUB versions of Person B's functions (Athena, Ship's Log).
+
+write_tip is real now: tiresias/insights.py.
 
 The names, inputs, and return shapes follow the team CLAUDE.md section
 "Function contracts between Person A and Person B".
@@ -44,24 +46,3 @@ def get_hint(student, task, snapshot, level, cue, past_hints=None):
 def save_helpful(hint, snapshot):
     """Pretend to save a hint that helped. Returns None, like the contract."""
     return None
-
-
-# STUB
-# TODO: swap for Person B's real function (tiresias/insights.py)
-def write_tip(counts):
-    """Return a fake teacher tip as text.
-
-    counts is a list like [{"concept": "missing colon", "students": 2}].
-    """
-    if len(counts) == 0:
-        return "Everyone is sailing fine right now."
-
-    # Use the first concept in the list for the fake tip.
-    top = counts[0]
-    if top["students"] == 1:
-        stuck_text = f"1 student is stuck on {top['concept']}."
-    else:
-        stuck_text = f"{top['students']} students are stuck on {top['concept']}."
-
-    tip = stuck_text + " Try a 1-minute mini lesson."
-    return tip

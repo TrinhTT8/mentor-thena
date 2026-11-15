@@ -219,13 +219,12 @@ curl http://localhost:5000/api/seamap/c1
 - `siren_blocks`: how many of this class's hints Siren Guard blocked,
   since the last seed or reset
 
-Tiresias tip (real counts; the tip text is still a stub until Person B's
-`write_tip` is merged)
+Tiresias tip (real)
 ```
 curl http://localhost:5000/api/insight/c1
 ```
 ```json
-{"tip": "1 student is stuck on indentation. Try a 1-minute mini lesson.",
+{"tip": "1 student is stuck on indentation. Show an if with two lines inside it, and trace the pushed-in lines with your finger. Also stuck: loop runs wrong number of times (1), missing colon (1).",
  "counts": [{"concept": "indentation", "students": 1},
             {"concept": "loop runs wrong number of times", "students": 1},
             {"concept": "missing colon", "students": 1}],
@@ -238,6 +237,10 @@ curl http://localhost:5000/api/insight/c1
 - After 60 s it counts again. The tip is only rewritten (one `write_tip`
   call) when the counts changed
 - Nobody stuck: `{"tip": "Everyone is sailing fine right now.", "counts": [], ...}`
+- The tip: the biggest problem gets a 1-minute mini lesson idea, the others
+  are listed after "Also stuck:". With `USE_GEMINI=1` Gemini writes the
+  mini lesson idea; with `USE_GEMINI=0` (or if Gemini fails) it comes from
+  a ready-made list in `tiresias/insights.py`
 
 Teacher marks a student as helped (real)
 ```
