@@ -26,6 +26,7 @@
   --ithaca: var(--gold);    /* done */
   --focus-ring: var(--teal);
   --heading: var(--gold);   /* panel titles and the logo */
+  --logo-accent: var(--gold); /* "Thena" in the logo: gold on dark */
   --frame: var(--border);   /* soft card frames */
   --shadow-color: var(--pixel-edge); /* the offset block shadow under cards */
   --page-pattern: var(--panel);
@@ -40,6 +41,10 @@
   --editor-bar: #ebe4d0;    /* night theme: a cream editor, so light bars */
   --editor-line: #d6ccb0;
   --editor-error-line: #f7d9d4;
+  --alert-tint: #4a2a3a;
+  --alert-edge: var(--status-red);
+  --insight-bg: var(--panel-raised);
+  --insight-ink: var(--ink);
 
   /* Code editor and output box: the opposite of the page (cream on a dark page) */
   --editor-bg: #f6f1e3;
@@ -64,6 +69,7 @@
   --ink: #1b2245;           /* main text (about 13:1 on the page) */
   --ink-dim: #4b5378;       /* secondary text (about 7:1) */
   --heading: #1e2a5a;       /* gold is too faint on cream, so titles are navy */
+  --logo-accent: #8b5a2b;   /* "Thena" in the logo: wood brown on cream */
   --focus-ring: #0e6e6c;    /* a darker teal that shows on cream */
   --frame: #6a7bc4;         /* soft periwinkle card frames (the night border color) */
   --shadow-color: #1e2a5a;  /* hard navy block shadows, like the mockup */
@@ -81,6 +87,12 @@
   --parchment-row: #ece0c2; /* the quest row, a shade darker */
   --wood-frame: #8b5a2b;    /* the frame and tab (same as wood) */
   --wood-light: #b07a45;    /* the inner edge of the frame */
+
+  /* Teacher dashboard */
+  --alert-tint: #fde6e1;    /* background of a "Needs you" card */
+  --alert-edge: #d9534f;    /* its border (stronger than status-red, which is a fill) */
+  --insight-bg: #1e2a5a;    /* the navy Tiresias panel */
+  --insight-ink: #f6f1e3;
 
   /* Code editor bars (toolbar, output tab row) and dividers, like LeetCode */
   --editor-bar: #1b2033;

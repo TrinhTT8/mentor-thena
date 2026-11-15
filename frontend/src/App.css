@@ -148,19 +148,30 @@ body {
   padding: var(--space-4) clamp(var(--space-3), 4vw, var(--space-6)) 0;
 }
 
+/* The logo: pixel mark + "Mentor" (navy) "Thena" (brown) */
 .logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
   margin: 0;
   font: var(--text-display);
   font-size: clamp(32px, 4vw, 48px);
   color: var(--heading);
 }
 
+.logo-mark {
+  width: clamp(48px, 5vw, 66px);
+  height: auto;
+}
+
+.logo-accent { color: var(--logo-accent); }
+
 /* Wide screens: quest banner across the top, the code box left, Athena right.
    Narrow screens: everything in one column. */
 .student-main {
   flex: 1;
   width: 100%;
-  padding: var(--space-4) clamp(var(--space-3), 4vw, var(--space-6)) var(--space-6);
+  padding: var(--space-4) clamp(var(--space-3), 4vw, var(--space-6)) var(--space-4);
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-template-areas: "quest" "code" "athena";
@@ -183,12 +194,48 @@ body {
 
 /* The waves along the bottom of the page: only the wave tile, no extra water under it.
    The tile is scaled up with the screen (it keeps its shape) and repeats across. */
-.wave-border {
-  height: clamp(72px, 8vw, 120px);
+/* Coding page only: see-through pixel waves along the bottom of the screen,
+   behind everything (the rocks sit in front of them). */
+.page-waves {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  height: clamp(56px, 6vw, 96px);
   background: url('/pixel/wave-border.svg') repeat-x left bottom;
   background-size: auto 100%;
   image-rendering: pixelated;
+  opacity: 0.45;
+  pointer-events: none;
 }
+
+/* Two rock cliffs in the bottom corners of the screen, one on each side.
+   The right one is the same picture, mirrored. They stay put behind the content
+   (text, forms and buttons can sit on top of them) and take up no page space. */
+.shore-border {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+  height: clamp(72px, 9vw, 140px);
+  pointer-events: none;
+}
+
+.shore-border::before,
+.shore-border::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  height: 100%;
+  aspect-ratio: 28 / 24; /* the cliff picture's shape */
+  background: url('/pixel/sea-cliff.svg') no-repeat bottom / contain;
+  image-rendering: pixelated;
+}
+
+.shore-border::before { left: 0; }
+.shore-border::after { right: 0; transform: scaleX(-1); }
 
 /* ---------- The kid's ship chip (top right) ---------- */
 .my-ship {
@@ -227,6 +274,7 @@ body {
 .status-square.is-green { background: var(--status-green); }
 .status-square.is-yellow { background: var(--status-yellow); }
 .status-square.is-ithaca { background: var(--ithaca); }
+.status-square.is-red { background: var(--status-red); }
 
 /* ---------- Quest banner ---------- */
 .quest-banner {
@@ -400,7 +448,7 @@ span.ide-tab { cursor: default; }
 /* Output (Result tab) and the Goal tab */
 .output-box,
 .goal-box {
-  min-height: 140px;
+  min-height: 112px;
   margin: 0;
   padding: var(--space-3) var(--space-4);
   background: var(--editor-bg);
@@ -589,6 +637,777 @@ span.ide-tab { cursor: default; }
   color: var(--on-accent);
   background: var(--stone-light);
   border: var(--border-thin) solid var(--pixel-edge);
+}
+
+/* ---------- Top bar extras ---------- */
+.top-left {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+}
+
+.back-link {
+  font: var(--text-body);
+  font-weight: 800;
+  color: var(--heading);
+  text-decoration: none;
+}
+
+.back-link:hover { color: var(--focus-ring); }
+
+/* ---------- Home page ---------- */
+.home-top-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.room-chip {
+  padding: var(--space-1) var(--space-3);
+  font: var(--text-small);
+  background: var(--panel);
+  border: var(--border-thin) solid var(--border);
+}
+
+/* Profile button and its drop-down card */
+.profile { position: relative; }
+
+.profile-button {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1) var(--space-3) var(--space-1) var(--space-1);
+  font: var(--text-label);
+  color: var(--ink);
+  background: var(--panel);
+  border: var(--border-soft) solid var(--border);
+  box-shadow: var(--shadow-pixel);
+  cursor: pointer;
+}
+
+.profile-avatar {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  background: var(--gold);
+  border: var(--border-thin) solid var(--pixel-edge);
+}
+
+.profile-avatar.is-big { width: 72px; height: 72px; }
+
+.profile-card {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  right: 0;
+  z-index: 10;
+  width: 220px;
+  display: grid;
+  justify-items: center;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  background: var(--parchment);
+  color: var(--on-accent);
+  border: var(--border-soft) solid var(--wood-frame);
+  box-shadow: 6px 6px 0 var(--wood-frame);
+  animation: card-pop 180ms ease-out;
+}
+
+.profile-card-name { margin: 0; font: var(--text-title); color: var(--heading); }
+.profile-card-room { margin: 0; font: var(--text-small); color: var(--ink-dim); }
+
+/* Greeting */
+.home-main {
+  flex: 1;
+  width: 100%;
+  padding: var(--space-3) clamp(var(--space-3), 4vw, var(--space-6)) var(--space-4);
+  display: grid;
+  gap: var(--space-4);
+  align-content: start;
+}
+
+.greeting-title {
+  margin: 0;
+  font: var(--text-display);
+  font-size: clamp(36px, 5vw, 56px);
+  color: var(--heading);
+}
+
+.greeting-sub {
+  margin: 0;
+  font: var(--text-body-lg);
+}
+
+.home-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-5) var(--space-4);
+  align-items: start;
+}
+
+@media (min-width: 960px) {
+  .home-grid { grid-template-columns: minmax(0, 1fr) clamp(300px, 28vw, 400px); }
+}
+
+/* The map: a navy sea in a wooden frame */
+.voyage-map {
+  position: relative;
+  padding: var(--space-3);
+  background: var(--sea-bottom);
+  border: var(--border-pixel) solid var(--wood-frame);
+  box-shadow: var(--shadow-pixel);
+}
+
+.map-badge {
+  position: absolute;
+  top: var(--space-4);
+  left: var(--space-4);
+  z-index: 2;
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  padding: var(--space-1) var(--space-3);
+  font: var(--text-small);
+  color: var(--insight-ink);
+  background: var(--sea-bottom);
+  border: var(--border-thin) solid var(--insight-ink);
+}
+
+.map-badge-title { font: var(--text-tag); color: var(--gold); }
+
+/* Height follows the screen so the whole page fits without scrolling */
+.map-sea {
+  position: relative;
+  height: clamp(320px, 54vh, 540px);
+  background: linear-gradient(to bottom, var(--sea-bottom), var(--sea-top) 55%, var(--sea-bottom));
+  overflow: hidden;
+}
+
+/* A line of pixel foam across the whole sea */
+.map-wave {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 12px;
+  background: url("/pixel/wave-line.svg") repeat-x;
+  background-size: 48px 12px;
+  image-rendering: pixelated;
+  opacity: 0.85;
+  animation: wave-drift 6s linear infinite;
+}
+
+/* The middle line drifts the other way, a little slower, so the sea feels alive */
+.map-wave:nth-of-type(2) { animation-direction: reverse; animation-duration: 8s; }
+
+/* Slide the foam by exactly one tile width, so the loop has no jump */
+@keyframes wave-drift {
+  from { background-position-x: 0; }
+  to { background-position-x: 48px; }
+}
+
+/* The dotted route between the islands */
+.map-route {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.map-route polyline {
+  fill: none;
+  stroke: var(--stone-light);
+  stroke-width: 4;
+  stroke-dasharray: 3 12;
+  stroke-linecap: square;
+  vector-effect: non-scaling-stroke;
+}
+
+.map-stops {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Each island sits at its spot (--x, --y set by the page) */
+.map-stop {
+  position: absolute;
+  left: var(--x);
+  top: var(--y);
+  transform: translate(-50%, -50%);
+  z-index: 1;
+}
+
+.map-stop-button {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  padding: var(--space-2);
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: var(--border-soft) solid transparent;
+  cursor: pointer;
+}
+
+.map-stop.is-selected .map-stop-button { border-color: var(--gold); }
+
+.map-island { width: 100px; height: 65px; }
+
+/* The quest the kid is on now: just their ship sailing there (no island) */
+.map-ship {
+  width: 72px;
+  height: 72px;
+  animation: ship-bob 2.4s ease-in-out infinite;
+}
+
+.map-sparkle {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-3);
+  animation: twinkle 1.2s ease-in-out infinite alternate;
+}
+
+/* The little card under each island */
+.map-label {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  min-width: 140px;
+  margin-top: var(--space-1);
+  padding: var(--space-1) var(--space-2) var(--space-2);
+  color: var(--on-accent);
+  background: var(--parchment);
+  border: var(--border-thin) solid var(--pixel-edge);
+  box-shadow: 3px 3px 0 var(--pixel-edge);
+}
+
+.map-stop.is-locked .map-label { background: var(--stone); }
+
+.map-label-number { font: var(--text-tag); color: var(--ink-dim); }
+.map-label-title { font: var(--text-small); }
+
+.map-chip {
+  padding: 0 var(--space-2);
+  font: var(--text-small);
+  font-size: 12px;
+  color: var(--on-accent);
+  border: var(--border-thin) solid var(--pixel-edge);
+}
+
+.map-chip.is-done { background: var(--gold); }
+.map-chip.is-today { background: var(--status-green); }
+.map-chip.is-locked { background: var(--stone-light); }
+
+.map-stop.is-ithaca .map-stop-button { cursor: default; }
+
+.map-ithaca-label {
+  margin-top: var(--space-1);
+  padding: 0 var(--space-2);
+  font: var(--text-tag);
+  text-transform: uppercase;
+  color: var(--gold);
+  background: var(--sea-bottom);
+  border: var(--border-thin) solid var(--gold);
+}
+
+/* Right column */
+.home-side {
+  display: grid;
+  gap: var(--space-4);
+  padding-top: var(--space-5); /* room for Athena peeking over the card */
+}
+
+.home-quest {
+  position: relative;
+  display: grid;
+  gap: var(--space-2);
+  justify-items: start;
+  padding: var(--space-4);
+  background: var(--parchment);
+  color: var(--on-accent);
+  border: var(--border-soft) solid var(--wood-frame);
+  box-shadow: inset 0 0 0 var(--border-thin) var(--wood-light), 6px 6px 0 var(--wood-frame);
+}
+
+.home-quest .tag-label { color: var(--ink-dim); }
+
+/* Athena peeks over the top edge of the card */
+.peek-owl {
+  position: absolute;
+  top: -50px;
+  right: var(--space-4);
+  width: 56px;
+  height: 56px;
+  transform-origin: 50% 100%;
+  animation: owl-float 3s ease-in-out infinite;
+}
+
+.skill-chip {
+  padding: 0 var(--space-2);
+  font: var(--text-small);
+  border: var(--border-thin) solid var(--border);
+}
+
+.home-quest .set-sail {
+  justify-self: stretch;
+  margin-top: var(--space-2);
+  text-align: center;
+  text-decoration: none;
+}
+
+.locked-note {
+  margin: 0;
+  font: var(--text-body);
+  font-weight: 800;
+  color: var(--ink-dim);
+}
+
+.logbook {
+  padding: var(--space-4);
+  background: var(--panel);
+  border: var(--border-soft) solid var(--frame);
+  box-shadow: var(--shadow-pixel);
+}
+
+.logbook-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: var(--space-2);
+}
+
+.logbook-stat {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-2);
+  background: var(--parchment);
+  border: var(--border-thin) solid var(--wood-light);
+}
+
+.logbook-stat strong { font: var(--text-title); color: var(--heading); }
+.logbook-stat span { font: var(--text-small); color: var(--ink-dim); }
+
+/* Narrow screens: the map becomes a list going down, with the route as a dashed line */
+@media (max-width: 760px) {
+  .map-sea { height: auto; padding: var(--space-6) var(--space-3) var(--space-4); }
+  .map-route, .map-wave { display: none; }
+
+  .map-stops {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: var(--space-5);
+  }
+
+  .map-stops::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    border-left: 4px dashed var(--stone-light);
+  }
+
+  .map-stop { position: relative; left: auto; top: auto; transform: none; }
+  .home-top-right .room-chip { display: none; }
+}
+
+/* ---------- Start page (sailor code) ---------- */
+.login-main {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding: var(--space-6) var(--space-3);
+}
+
+.login-card {
+  width: min(400px, 100%);
+  display: grid;
+  justify-items: center;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  background: var(--parchment);
+  color: var(--on-accent);
+  border: var(--border-soft) solid var(--wood-frame);
+  box-shadow: 6px 6px 0 var(--wood-frame);
+  text-align: center;
+}
+
+.login-input {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  font: var(--text-title);
+  text-align: center;
+  color: var(--ink);
+  background: var(--panel);
+  border: var(--border-soft) solid var(--border);
+}
+
+/* ---------- Teacher dashboard ---------- */
+.teacher-bar { align-items: center; flex-wrap: wrap; }
+
+.class-label {
+  display: grid;
+  padding-left: var(--space-4);
+  border-left: var(--border-thin) solid var(--wood-light);
+}
+
+.class-kicker {
+  font: var(--text-small);
+  color: var(--ink-dim);
+}
+
+/* Teacher button: navy initials square, name and a little arrow */
+.teacher-profile { font: var(--text-body); font-weight: 800; }
+
+.initials-avatar {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  font: var(--text-tag);
+  color: var(--gold);
+  background: var(--sea-bottom);
+  border: var(--border-thin) solid var(--pixel-edge);
+}
+
+.initials-avatar.is-big { width: 64px; height: 64px; font: var(--text-title); }
+
+.class-name { font: var(--text-body-lg); }
+
+.teacher-summary {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* Count chips: icon + word + number on the status color */
+.count-chip,
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  font: var(--text-small);
+  color: var(--on-accent);
+  border: var(--border-thin) solid var(--pixel-edge);
+  white-space: nowrap;
+}
+
+.count-chip strong { margin-left: var(--space-1); }
+
+.is-red.count-chip, .is-red.status-badge { background: var(--status-red); }
+.is-yellow.count-chip, .is-yellow.status-badge { background: var(--status-yellow); }
+.is-green.count-chip, .is-green.status-badge { background: var(--status-green); }
+.is-ithaca.count-chip, .is-ithaca.status-badge { background: var(--ithaca); }
+
+.updated {
+  margin-left: var(--space-2);
+  font: var(--text-small);
+  color: var(--ink-dim);
+}
+
+/* Help queue left, Tiresias + whole class right */
+.teacher-main {
+  flex: 1;
+  width: 100%;
+  padding: var(--space-4) clamp(var(--space-3), 4vw, var(--space-6)) var(--space-4);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-4);
+  align-content: start;
+}
+
+@media (min-width: 960px) {
+  .teacher-main { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+}
+
+.teacher-side { display: grid; gap: var(--space-4); }
+
+.section-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.section-title {
+  margin: 0;
+  font: var(--text-title);
+  color: var(--heading);
+}
+
+.section-note {
+  font: var(--text-small);
+  color: var(--ink-dim);
+}
+
+/* The help queue: parchment in a wooden frame, like the quest banner */
+.help-queue {
+  padding: var(--space-4);
+  background: var(--parchment);
+  color: var(--on-accent);
+  border: var(--border-thin) solid var(--wood-light);
+  border-radius: var(--radius-panel);
+  min-height: 320px;
+}
+
+/* Filter tabs: All, Needs you, Getting hints, Sailing, At Ithaca (with counts) */
+.queue-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
+  margin-bottom: var(--space-3);
+  border-bottom: var(--border-thin) solid var(--wood-light);
+}
+
+.queue-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-1);
+  margin-bottom: calc(-1 * var(--border-thin));
+  font: var(--text-small);
+  color: var(--ink);
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+}
+
+.queue-tab .status-square { width: 14px; height: 14px; }
+.queue-tab-count { color: var(--ink-dim); }
+.queue-tab:hover { color: var(--heading); }
+.queue-tab.is-active { border-bottom-color: var(--heading); }
+.queue-tab.is-active .queue-tab-count { color: var(--ink); }
+
+.queue-empty {
+  margin: var(--space-5) 0;
+  font: var(--text-body-lg);
+  text-align: center;
+}
+
+.queue-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-3);
+}
+
+.queue-card {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  background: var(--panel);
+  border: var(--border-thin) solid var(--wood-light);
+}
+
+/* Small status square + word next to the name */
+.queue-status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font: var(--text-small);
+  font-size: 13px;
+}
+
+.queue-status .status-square { width: 14px; height: 14px; }
+.queue-card.is-red .queue-status .status-square { animation: blink 1.2s steps(2) infinite; }
+
+.queue-card.is-red {
+  background: var(--alert-tint);
+  border-color: var(--alert-edge);
+}
+
+.queue-name-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.queue-name {
+  font: var(--text-label);
+  color: var(--heading);
+}
+
+/* Calm view: only the red badge blinks */
+.queue-card.is-red .status-badge { animation: blink 1.2s steps(2) infinite; }
+
+@keyframes blink {
+  50% { opacity: 0.45; }
+}
+
+.queue-reason {
+  margin: 2px 0;
+  font: var(--text-small);
+}
+
+.queue-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font: var(--text-small);
+  color: var(--ink-dim);
+}
+
+.mini-pips { display: inline-flex; gap: 2px; }
+
+.mini-pip {
+  width: 12px;
+  height: 12px;
+  border: var(--border-thin) solid var(--pixel-edge);
+}
+
+.mini-pip.is-on { background: var(--pixel-edge); }
+
+/* Tiresias: a navy panel with a gold frame */
+.tiresias {
+  padding: var(--space-4);
+  background: var(--insight-bg);
+  color: var(--insight-ink);
+  border: var(--border-soft) solid var(--gold);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-pixel);
+}
+
+.tiresias-heading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+}
+
+/* The seeing eye glows softly, like a vision */
+.tiresias-eye {
+  width: 60px;
+  height: 40px;
+  animation: eye-glow 3s ease-in-out infinite;
+}
+
+@keyframes eye-glow {
+  0%, 100% { filter: drop-shadow(0 0 0 transparent); }
+  50% { filter: drop-shadow(0 0 6px var(--gold)); }
+}
+
+.tiresias-lead {
+  margin: 0 0 var(--space-1);
+  font: var(--text-body);
+  font-style: italic;
+  opacity: 0.85;
+}
+
+.tiresias-title {
+  margin: 0;
+  font: var(--text-tag);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--gold);
+}
+
+.tiresias-tip {
+  margin: 0 0 var(--space-3);
+  font: var(--text-body-lg);
+}
+
+/* One bar per concept: how many students are stuck on it */
+.concept-bars {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--space-2);
+}
+
+.concept-row {
+  display: grid;
+  grid-template-columns: minmax(96px, 30%) minmax(0, 1fr) 2ch;
+  align-items: center;
+  gap: var(--space-3);
+  font: var(--text-small);
+}
+
+.concept-track {
+  height: var(--space-3);
+  border: var(--border-thin) solid var(--frame);
+}
+
+.concept-fill {
+  display: block;
+  height: 100%;
+  background: var(--gold);
+  transition: width 400ms ease-out;
+}
+
+.concept-count { text-align: right; }
+
+/* Whole class */
+.whole-class {
+  padding: var(--space-4);
+  background: var(--panel);
+  border: var(--border-soft) solid var(--frame);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-pixel);
+}
+
+/* One bar split by status, with a 2px gap between the parts */
+.class-bar {
+  display: flex;
+  gap: 2px;
+  height: var(--space-4);
+  margin-bottom: var(--space-3);
+  padding: 2px;
+  background: var(--panel);
+  border: var(--border-thin) solid var(--pixel-edge);
+}
+
+.class-bar-part { flex-basis: 0; transition: flex-grow 400ms ease-out; }
+.class-bar-part.is-red { background: var(--status-red); }
+.class-bar-part.is-yellow { background: var(--status-yellow); }
+.class-bar-part.is-green { background: var(--status-green); }
+.class-bar-part.is-ithaca { background: var(--ithaca); }
+
+.ship-grid {
+  list-style: none;
+  margin: 0;
+  padding: var(--space-3);
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: var(--space-3);
+  background: var(--stone-light);
+  border: var(--border-thin) solid var(--frame);
+}
+
+.ship-cell {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-1);
+}
+
+.ship-cell img { animation: ship-bob 3s ease-in-out infinite; }
+.ship-cell img.is-alert { animation: ship-bob 3s ease-in-out infinite, blink 1.2s steps(2) infinite; }
+
+.ship-name {
+  font: var(--text-tag);
+  color: var(--heading);
+}
+
+.class-stats {
+  margin: var(--space-3) 0 0;
+  font: var(--text-small);
+  color: var(--ink-dim);
+}
+
+@media (max-width: 600px) {
+  .queue-card { grid-template-columns: auto minmax(0, 1fr); }
+  .queue-card .stone-button { grid-column: 1 / -1; }
+  .class-label { padding-left: 0; border-left: none; }
 }
 
 /* ---------- Ithaca celebration ---------- */
