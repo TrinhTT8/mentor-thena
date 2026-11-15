@@ -51,6 +51,8 @@ DEMO_TASKS = [
         "title": "Say hello to Ithaca",
         "instructions": "Use print to show: Hello, Ithaca!",
         "expected_output": "Hello, Ithaca!",
+        # Server only: Siren Guard blocks hints that show these lines.
+        "solution": 'print("Hello, Ithaca!")',
     },
     {
         "_id": "t2",
@@ -58,6 +60,7 @@ DEMO_TASKS = [
         "instructions": "Use a for loop to print the numbers 1 to 5, "
                         "one on each line.",
         "expected_output": "1\n2\n3\n4\n5",
+        "solution": "for i in range(1, 6):\n    print(i)",
     },
     {
         "_id": "t3",
@@ -65,6 +68,7 @@ DEMO_TASKS = [
         "instructions": "Make a variable crew = 6. If crew is 5 or more, "
                         "print: Set sail!",
         "expected_output": "Set sail!",
+        "solution": 'crew = 6\nif crew >= 5:\n    print("Set sail!")',
     },
 ]
 
