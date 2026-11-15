@@ -56,6 +56,13 @@ Restart Flask (Ctrl+C, then `python app.py`) after changing `.env`.
 The snapshot route calls Athena's real `get_hint`. With `USE_GEMINI=0`
 the hints come from `athena/fallbacks.py`.
 
+Siren Guard (only with `USE_GEMINI=1`; backup hints are trusted):
+- Every Gemini hint gets a free text check (expected output, a line of the
+  task's `solution`, or the kid's line with the fix added)
+- At levels 1 and 2 Gemini also checks it (1 more request)
+- If blocked: one rewrite, else the backup hint. The hint gets
+  `siren_blocked: true`, and the Sea Map's `siren_blocks` counts it
+
 Ship's Log (only with `USE_GEMINI=1`):
 - When a student reaches Ithaca after a Gemini hint for an error, that hint
   is saved in `ship_log` (1 embedding request; 0 if the same hint is

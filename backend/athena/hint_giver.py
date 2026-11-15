@@ -9,6 +9,7 @@ import logging
 import config
 from athena.fallbacks import fallback_hint
 from athena.prompts import SYSTEM_PROMPT, HintResult, build_hint_prompt
+from athena.siren_guard import guard
 from gemini_client import generate_json
 from ships_log.memory import find_similar_hint
 
@@ -54,21 +55,25 @@ def get_hint(student, task, snapshot, level, cue, past_hints=None):
 
     try:
         result = generate_json(prompt, HintResult, system=SYSTEM_PROMPT)
-        return _package(result.hint, result.reason, result.concept, level, source="gemini",
-                        from_ships_log=ships_log_hint is not None)
     except Exception as exc:  # timeout, rate limit, Gemini down, bad JSON: never crash the request
         log.warning("Gemini hint failed for student %s: %s", student.get("_id"), exc)
         text, reason, concept = fallback_hint(snapshot, task, level)
         return _package(text, reason, concept, level, source="fallback")
 
+    # Siren Guard (Person A): block and fix hints that give the answer away. Never raises.
+    checked = guard(result.hint, result.reason, result.concept, prompt, task, snapshot, level)
+    return _package(checked["text"], checked["reason"], checked["concept"], level,
+                    source=checked["source"], from_ships_log=ships_log_hint is not None,
+                    siren_blocked=checked["siren_blocked"])
 
-def _package(text, reason, concept, level, source, from_ships_log=False):
+
+def _package(text, reason, concept, level, source, from_ships_log=False, siren_blocked=False):
     return {
         "text": text.strip(),
         "reason": reason.strip(),
         "concept": concept,
         "level": level,
         "from_ships_log": from_ships_log,  # True when a Ship's Log hint inspired this one
-        "siren_blocked": False,    # B9 sets this when Siren Guard blocked a leaking hint
+        "siren_blocked": siren_blocked,    # True when Siren Guard blocked a hint that gave the answer away
         "source": source,          # "gemini" or "fallback", handy for debugging and the demo
     }
