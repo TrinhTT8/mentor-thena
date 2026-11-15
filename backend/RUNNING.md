@@ -74,6 +74,16 @@ Ship's Log (only with `USE_GEMINI=1`):
 - Demo reset and `seed_demo.py` keep the Ship's Log: it remembers
   across sessions
 
+Give the Ship's Log a starting memory (once, before the demo):
+```
+python seed_ships_log.py
+```
+Needs `USE_GEMINI=1` in `.env` (with 0 it stops and uses nothing).
+Saves 15 common kid bugs with a hint that helped, so the demo can show
+`"from_ships_log": true` right away. 1 embedding request per new entry
+(15 the first time); running it again skips what's there (0 requests).
+Prints: `Ship's Log: added 15, skipped 0 already there.`
+
 
 ## Seed the demo class and run the bot simulator
 
