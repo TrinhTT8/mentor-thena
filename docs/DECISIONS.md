@@ -4,6 +4,14 @@ Why things are the way they are. Newest decisions first. Each entry: the decisio
 
 ---
 
+## 2026-11-15 · Siren Guard (`athena/siren_guard.py`, Person A)
+- **Free check, every level (no Gemini):** block a hint that shows the expected output (unless the instructions already show it), a line of the task's `solution` (a new optional, server-only task field; lines already in the instructions or in the kid's code are fine), or the kid's own line with the fix added (a missing `:` on an if/for/while/def/elif/else line, or a missing `)`). Compared lowercase with all spaces removed.
+- **Gemini check, levels 1–2 only** (decision B): `{"gives_away": true/false}`, temperature 0. If the check call fails, the hint is kept (it already passed the free check).
+- **Blocked:** one rewrite (`MAX_SIREN_REWRITES = 1`), then the free check only. Still blocked or the rewrite failed: the backup hint. `siren_blocked: true` whenever the first hint was blocked, so the Sea Map stat counts it.
+- **Cost per hint:** levels 1–2: 2 requests (3 if blocked); level 3: 1 (2 if blocked).
+- **Test (6 requests):** the check blocked "Put a colon at the end of line 2" and passed a clean question; a leaking `if crew >= 5:` was rewritten without the symbol; a live level-1 Gemini hint was blocked and rewritten. That rewrite named the line ("your second line"), which led to the next rule.
+- **Level 1 line check (free):** a level-1 hint that names which line to look at ("line 2", "second line", "last line") is rewritten with the feedback "do not name or number the line" (skipping the Gemini check, so it costs 1 rewrite). General words like "lines that start with if" are fine. It is a level-rule slip, not an answer leak, so it does **not** set `siren_blocked`. Test (1 request): "Look at the end of your second line" was rewritten without naming a line.
+
 ## 2026-11-14 · Getting-started hints (13 → 15 concepts)
 - **Why:** kids who don't know how to *start* or *finish* a program were labeled "wrong output" or "other", so the teacher never saw "5 kids can't start the task", and the hints pointed at a bug that didn't exist.
 - **Two new concepts:** "getting started" (empty or almost empty code) and "next step" (the code runs but isn't finished). Tiresias counts them like any other concept.

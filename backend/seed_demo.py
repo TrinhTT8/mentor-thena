@@ -45,32 +45,84 @@ CUE_REASONS = {
     "wrong_output": "Output is wrong 3 times",
 }
 
+# The demo quests. Each one shows a different demo bug.
+# Sent to the browser: title, instructions, example (see seamap/dashboard.py).
+# Server only (never sent):
+# - expected_output: the server compares it to decide Ithaca
+# - solution: the correct program; Siren Guard blocks hints that show it
+# - steps: the teacher's plan; Athena uses it to pick the next small step
+# example is a teacher-written sample for a DIFFERENT problem,
+# never the expected output.
 DEMO_TASKS = [
     {
+        # Demo bug: missing quotes.
         "_id": "t1",
         "title": "Say hello to Ithaca",
         "instructions": "Use print to show: Hello, Ithaca!",
+        "example": 'print("Ahoy, sailor!")',
         "expected_output": "Hello, Ithaca!",
+        "solution": 'print("Hello, Ithaca!")',
+        "steps": [
+            "write print with round brackets",
+            "put the words inside quote marks",
+        ],
     },
     {
+        # Demo bugs: missing colon, indentation.
         "_id": "t2",
-        "title": "Count the oars",
-        "instructions": "Use a for loop to print the numbers 1 to 5, "
-                        "one on each line.",
-        "expected_output": "1\n2\n3\n4\n5",
+        "title": "Big kid",
+        "instructions": "Make age = 10. If age is more than 8, print: Big kid",
+        "example": 'pet = "cat"\nif pet == "cat":\n    print("Meow!")',
+        "expected_output": "Big kid",
+        "solution": 'age = 10\nif age > 8:\n    print("Big kid")',
+        "steps": [
+            "make the age variable",
+            "write an if that checks if age is more than 8",
+            "print inside the if (push the line in)",
+        ],
     },
     {
+        # Demo bug: infinite loop (forgetting to make n smaller).
         "_id": "t3",
-        "title": "Is the ship ready?",
-        "instructions": "Make a variable crew = 6. If crew is 5 or more, "
-                        "print: Set sail!",
-        "expected_output": "Set sail!",
+        "title": "Countdown to sail",
+        "instructions": "Make n = 3. Use a while loop to print 3, 2, 1 "
+                        "(one on each line), then print: Set sail!",
+        "example": 'snacks = 1\nwhile snacks <= 2:\n    print("Yum")\n'
+                   '    snacks = snacks + 1',
+        "expected_output": "3\n2\n1\nSet sail!",
+        "solution": 'n = 3\nwhile n > 0:\n    print(n)\n    n = n - 1\n'
+                    'print("Set sail!")',
+        "steps": [
+            "make n = 3",
+            "write a while loop that runs while n is more than 0",
+            "print n inside the loop",
+            "make n smaller each time",
+            "after the loop, print Set sail!",
+        ],
+    },
+    {
+        # Demo concept: getting started (kids who don't know how to begin).
+        "_id": "t4",
+        "title": "Odd or even crew",
+        "instructions": "Make crew = 7. If crew is even, print: even. "
+                        "Otherwise print: odd",
+        "example": "cookies = 10\n"
+                   "# what is left over after sharing with 3 friends?\n"
+                   "print(cookies % 3)",
+        "expected_output": "odd",
+        "solution": 'crew = 7\nif crew % 2 == 0:\n    print("even")\n'
+                    'else:\n    print("odd")',
+        "steps": [
+            "find the leftover after dividing by 2",
+            "use if and else",
+            "print the word",
+        ],
     },
 ]
 
 
-def make_student(student_id, name, status, cue, concept, hint_level,
-                 minutes_stuck):
+def make_student(student_id, name, task_id, status, cue, concept,
+                 hint_level, minutes_stuck):
     """Build one student document for class c1."""
     now = datetime.now(timezone.utc)
 
@@ -91,7 +143,7 @@ def make_student(student_id, name, status, cue, concept, hint_level,
         "stuck_reason": stuck_reason,
         "concept": concept,
         "hint_level": hint_level,
-        "current_task_id": "t1",
+        "current_task_id": task_id,
         # Argus state fields
         "same_error_count": 0,
         "wrong_output_count": 0,
@@ -131,20 +183,22 @@ def seed():
     for task in DEMO_TASKS:
         tasks.replace_one({"_id": task["_id"]}, task, upsert=True)
 
-    # s1 is the live student. The bots start in a mix of statuses
+    # s1 is the live student, on Big kid (the missing colon demo bug).
+    # The bots are spread over all 4 quests, in a mix of statuses,
     # so the Sea Map looks like a real class right away.
     demo_students = [
-        make_student("s1", "Maya", "green", None, None, 0, 0),
-        make_student("s2", "Leo", "green", None, None, 0, 0),
-        make_student("s3", "Ava", "yellow", "same_error",
+        make_student("s1", "Maya", "t2", "green", None, None, 0, 0),
+        make_student("s2", "Leo", "t1", "green", None, None, 0, 0),
+        make_student("s3", "Ava", "t2", "yellow", "same_error",
                      "missing colon", 1, 1),
-        make_student("s4", "Noah", "yellow", "idle",
+        make_student("s4", "Noah", "t2", "yellow", "idle",
                      "indentation", 2, 2),
-        make_student("s5", "Zoe", "red", "wrong_output",
-                     "loop runs wrong number of times", 3, 4),
-        make_student("s6", "Sam", "ithaca", None, None, 0, 0),
-        make_student("s7", "Ivy", "green", None, None, 0, 0),
-        make_student("s8", "Ben", "green", None, None, 0, 0),
+        make_student("s5", "Zoe", "t3", "red", "same_error",
+                     "infinite loop", 3, 4),
+        make_student("s6", "Sam", "t1", "ithaca", None, None, 0, 0),
+        make_student("s7", "Ivy", "t4", "green", None, None, 0, 0),
+        make_student("s8", "Ben", "t4", "yellow", "idle",
+                     "getting started", 1, 1),
     ]
     students.insert_many(demo_students)
 
