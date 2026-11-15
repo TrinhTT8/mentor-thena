@@ -159,7 +159,10 @@ def find_heartbeat_cue(activity, recent_activity):
 
 
 def in_cooldown(student, now):
-    """True when the student got a hint less than 45 seconds ago."""
+    """True when the student got a hint less than the cooldown ago.
+
+    The cooldown is in config.STUCK_RULES (20 seconds).
+    """
     last_hint_at = student.get("last_hint_at")
     if last_hint_at is None:
         return False
