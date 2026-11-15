@@ -42,16 +42,17 @@ when hints keep coming back as fallback, or once before the demo.
 ```
 python app.py
 ```
-Runs on http://localhost:5000. It needs `MONGODB_URI` in `.env`,
-because `app.py` connects to MongoDB when it starts.
+Runs on http://localhost:5000. It needs `MONGODB_URI` and `GEMINI_API_KEY`
+in `.env`, because `app.py` connects to MongoDB and loads the Gemini client
+when it starts.
 
 Gemini on/off: `USE_GEMINI` in `.env`.
 - `USE_GEMINI=0`: free backup hints, zero Gemini requests (use while building)
 - `USE_GEMINI=1`: real Gemini hints (real testing and the demo). Missing = 1
 
 Restart Flask (Ctrl+C, then `python app.py`) after changing `.env`.
-Right now the routes still use stub hints, so this switch changes nothing
-until the snapshot route calls the real `get_hint`.
+The snapshot route calls Athena's real `get_hint`. With `USE_GEMINI=0`
+the hints come from `athena/fallbacks.py`.
 
 
 ## Seed the demo class and run the bot simulator
@@ -100,25 +101,59 @@ curl http://localhost:5000/api/task/s1
 ```
 `expected_output` is never sent.
 
-Snapshot on Run (STUB: nothing is saved, always a level 1 hint)
+### Snapshot (real)
+
+Every Run is saved in `snapshots`. Heartbeats are not saved.
+Argus checks each snapshot, and Athena makes a hint when Argus finds a cue.
+These tests change s1, so run `python seed_demo.py` afterwards to reset it.
+
+Run with an error (the first time: no hint yet)
 ```
-curl -X POST http://localhost:5000/api/snapshot -H "Content-Type: application/json" -d "{\"student_id\":\"s1\",\"task_id\":\"t1\",\"event\":\"run\",\"code\":\"print('hi')\",\"output\":\"hi\",\"error\":\"\"}"
+curl -X POST http://localhost:5000/api/snapshot -H "Content-Type: application/json" -d "{\"student_id\":\"s1\",\"task_id\":\"t1\",\"event\":\"run\",\"code\":\"if x\",\"output\":\"\",\"error\":\"SyntaxError: expected ':'\"}"
 ```
-[Mac/Linux: put the JSON in single quotes and drop the backslashes:
-`-d '{"student_id":"s1","task_id":"t1","event":"run","code":"print(1)","output":"1","error":""}'`]
+[Mac/Linux: put the JSON in single quotes and drop the backslashes]
 ```json
-{"status": "yellow",
- "hint": {"level": 1, "text": "What does Python need at the end of an if line?",
-          "from_ships_log": false}}
+{"status": "green", "hint": null}
 ```
 
-Snapshot heartbeat (STUB: always green, no hint)
+Trigger a hint: run the same command 3 times in a row.
+The 3rd run gets a level 1 hint (this text is a backup hint, `USE_GEMINI=0`):
+```json
+{"status": "yellow",
+ "hint": {"level": 1,
+          "text": "Python lines that start with if, for or while need something special at the end. Can you spot it?",
+          "from_ships_log": false}}
+```
+Running it again within 45 s gives no new hint (cooldown).
+After 45 s, the next run gives level 2, then level 3, then the ship turns red.
+
+Reach Ithaca: run with the right output
+```
+curl -X POST http://localhost:5000/api/snapshot -H "Content-Type: application/json" -d "{\"student_id\":\"s1\",\"task_id\":\"t1\",\"event\":\"run\",\"code\":\"print('Hello, Ithaca!')\",\"output\":\"Hello, Ithaca!\",\"error\":\"\"}"
+```
+[Mac/Linux: single quotes around the JSON, no backslashes.
+Use `print(1)` as the code, because the code's own single quotes would break it]
+```json
+{"status": "ithaca", "hint": null}
+```
+After Ithaca, every snapshot answers `"ithaca"` until you re-seed.
+
+Heartbeat, student is busy (no hint)
 ```
 curl -X POST http://localhost:5000/api/snapshot -H "Content-Type: application/json" -d "{\"student_id\":\"s1\",\"task_id\":\"t1\",\"event\":\"heartbeat\",\"code\":\"\",\"output\":\"\",\"error\":\"\",\"activity\":{\"seconds_since_last_key\":5,\"seconds_since_cursor_move\":5,\"keys_typed\":12,\"keys_deleted\":3}}"
 ```
 [Mac/Linux: single quotes around the JSON, no backslashes]
 ```json
 {"status": "green", "hint": null}
+```
+
+Heartbeat, student is idle (no key AND no cursor move for 60 s or more)
+```
+curl -X POST http://localhost:5000/api/snapshot -H "Content-Type: application/json" -d "{\"student_id\":\"s1\",\"task_id\":\"t1\",\"event\":\"heartbeat\",\"code\":\"\",\"output\":\"\",\"error\":\"\",\"activity\":{\"seconds_since_last_key\":65,\"seconds_since_cursor_move\":65,\"keys_typed\":0,\"keys_deleted\":0}}"
+```
+[Mac/Linux: single quotes around the JSON, no backslashes]
+```json
+{"status": "yellow", "hint": {"level": 1, "text": "...", "from_ships_log": false}}
 ```
 
 Snapshot without student_id (error 400)
@@ -128,6 +163,15 @@ curl -X POST http://localhost:5000/api/snapshot -H "Content-Type: application/js
 [Mac/Linux: `-d '{"event":"run"}'`]
 ```json
 {"error": "student_id is required"}
+```
+
+Snapshot for a student who does not exist (error 404)
+```
+curl -X POST http://localhost:5000/api/snapshot -H "Content-Type: application/json" -d "{\"student_id\":\"nobody\",\"event\":\"run\"}"
+```
+[Mac/Linux: `-d '{"student_id":"nobody","event":"run"}'`]
+```json
+{"error": "student not found"}
 ```
 
 Student's own ship (real; fake yellow + hint if the student is not found)
