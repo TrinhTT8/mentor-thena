@@ -74,6 +74,12 @@ Reset before a demo: stop it and run `python seed_demo.py` again.
 Bots that reach Ithaca stay there, so after a long run most bots end up
 docked. Re-run the script to get a busy Sea Map again.
 
+Two ways to reset:
+- `python seed_demo.py`: the mixed demo class (some yellow, red, ithaca)
+- `POST /api/demo/reset` (see below): every ship green, hints and
+  snapshots deleted. If the simulator is running, the bots start
+  moving again right away
+
 
 ## Test each route
 
@@ -82,6 +88,8 @@ instead of `curl`.
 
 "Real" means the route reads MongoDB (seed first).
 "STUB" means fake data for now.
+An unknown student or class ID gives a 404, for example
+`{"error": "student not found"}`.
 
 Health check (real)
 ```
@@ -91,7 +99,7 @@ curl http://localhost:5000/api/health
 {"ok": true}
 ```
 
-Current task for a student (real; fake task `t1` if the student is not found)
+Current task for a student (real)
 ```
 curl http://localhost:5000/api/task/s1
 ```
@@ -174,15 +182,23 @@ curl -X POST http://localhost:5000/api/snapshot -H "Content-Type: application/js
 {"error": "student not found"}
 ```
 
-Student's own ship (real; fake yellow + hint if the student is not found)
+Student's own ship (real)
 ```
 curl http://localhost:5000/api/status/s1
 ```
 ```json
 {"status": "green", "hint": null}
 ```
+The hint only shows while the ship is yellow or red (the newest hint
+on the current task). Green and Ithaca always give `"hint": null`.
+```json
+{"status": "yellow",
+ "hint": {"level": 1,
+          "text": "Python lines that start with if, for or while need something special at the end. Can you spot it?",
+          "from_ships_log": false}}
+```
 
-Sea Map for the teacher (real students; `stats` is STUB)
+Sea Map for the teacher (real)
 ```
 curl http://localhost:5000/api/seamap/c1
 ```
@@ -195,9 +211,13 @@ curl http://localhost:5000/api/seamap/c1
     "reason": "No typing for 60 seconds", "concept": "indentation",
     "hint_level": 2, "stuck_since": "2026-11-14T23:33:12.990000+00:00"}
  ],
- "stats": {"avg_seconds_stuck": 95, "siren_blocks": 2}}
+ "stats": {"avg_seconds_stuck": 113, "siren_blocks": 0}}
 ```
 (shortened: the real response has all 8 students)
+- `avg_seconds_stuck`: average time stuck over the yellow and red ships
+  right now, in whole seconds. 0 when nobody is stuck
+- `siren_blocks`: how many of this class's hints Siren Guard blocked,
+  since the last seed or reset
 
 Tiresias tip (STUB until Tiresias is built)
 ```
@@ -211,18 +231,24 @@ curl http://localhost:5000/api/insight/c1
  "updated_at": "2026-11-15T00:18:46.267087+00:00"}
 ```
 
-Teacher marks a student as helped (STUB: the ship does not change yet)
+Teacher marks a student as helped (real)
 ```
 curl -X POST http://localhost:5000/api/resolve/s3
 ```
 ```json
 {"ok": true, "status": "green"}
 ```
+The ship goes green and its stuck state is cleared, so the next time
+it gets stuck the hints start again at level 1.
+A ship at Ithaca stays docked: `{"ok": true, "status": "ithaca"}`.
 
-Demo reset (STUB: nothing is reset yet; use `python seed_demo.py`)
+Demo reset (real)
 ```
 curl -X POST http://localhost:5000/api/demo/reset
 ```
 ```json
-{"ok": true}
+{"ok": true, "students_reset": 8}
 ```
+Every ship goes green with its stuck state cleared. Names and tasks stay.
+All hints and snapshots are deleted, and the old Tiresias tip is cleared.
+To get the mixed demo class back, run `python seed_demo.py` instead.

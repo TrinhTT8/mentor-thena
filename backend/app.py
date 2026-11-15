@@ -11,41 +11,9 @@ from db import students, tasks, snapshots, hints, classes
 # STUB: save_helpful is still a stub until Person B writes ships_log/memory.py.
 # TODO: swap for Person B's real function
 from person_b_stubs import save_helpful
+from seamap import dashboard
 
 app = Flask(__name__)
-
-
-def to_iso(value):
-    """Turn a date into an ISO 8601 text, like 2026-11-14T03:20:00+00:00.
-
-    MongoDB gives back dates without a time zone, but they are always UTC.
-    Anything that is not a date (for example None) is returned as it is.
-    """
-    if not isinstance(value, datetime):
-        return value
-
-    if value.tzinfo is None:
-        value = value.replace(tzinfo=timezone.utc)
-
-    return value.isoformat()
-
-
-def find_latest_hint(student_id):
-    """Return the newest hint for a student in the contract shape, or None."""
-    hint_doc = hints.find_one(
-        {"student_id": student_id},
-        sort=[("created_at", -1)],
-    )
-
-    if hint_doc is None:
-        return None
-
-    hint = {
-        "level": hint_doc.get("level"),
-        "text": hint_doc.get("text"),
-        "from_ships_log": hint_doc.get("from_ships_log", False),
-    }
-    return hint
 
 
 @app.get("/api/health")
@@ -56,32 +24,11 @@ def health():
 @app.get("/api/task/<student_id>")
 def get_task(student_id):
     """Send the student's current task. Never sends expected_output."""
-    student = students.find_one({"_id": student_id})
+    result = dashboard.get_task(student_id)
+    if result is None:
+        return jsonify({"error": "student or task not found"}), 404
 
-    task = None
-    if student is not None:
-        task_id = student.get("current_task_id")
-        # Only ask MongoDB for the fields we are allowed to send.
-        task = tasks.find_one(
-            {"_id": task_id},
-            {"title": 1, "instructions": 1},
-        )
-
-    if task is not None:
-        result = {
-            "task_id": task["_id"],
-            "title": task.get("title"),
-            "instructions": task.get("instructions"),
-        }
-        return jsonify(result)
-
-    # STUB: fake task until seed_demo.py fills the database.
-    fake_task = {
-        "task_id": "t1",
-        "title": "Say hello to Ithaca",
-        "instructions": "Use print to show: Hello, Ithaca!",
-    }
-    return jsonify(fake_task)
+    return jsonify(result)
 
 
 @app.post("/api/snapshot")
@@ -272,127 +219,38 @@ def reach_ithaca(student_id, task_id, snapshot):
 
 @app.get("/api/status/<student_id>")
 def get_status(student_id):
-    """Send the student's own ship color and their latest hint."""
-    student = students.find_one({"_id": student_id})
+    """Send the student's own ship color, and their hint while stuck."""
+    result = dashboard.get_status(student_id)
+    if result is None:
+        return jsonify({"error": "student not found"}), 404
 
-    if student is not None:
-        result = {
-            "status": student.get("status", "green"),
-            "hint": find_latest_hint(student_id),
-        }
-        return jsonify(result)
-
-    # STUB: fake status until seed_demo.py fills the database.
-    fake_hint = {
-        "level": 1,
-        "text": "What does Python need at the end of an if line?",
-        "from_ships_log": False,
-    }
-    return jsonify({"status": "yellow", "hint": fake_hint})
+    return jsonify(result)
 
 
 @app.get("/api/seamap/<class_id>")
 def get_seamap(class_id):
     """Send every ship in the class for the teacher's Sea Map."""
-    student_list = []
+    result = dashboard.get_seamap(class_id)
+    if result is None:
+        return jsonify({"error": "class not found"}), 404
 
-    for student in students.find({"class_id": class_id}):
-        ship = {
-            "id": student["_id"],
-            "name": student.get("name"),
-            "status": student.get("status", "green"),
-            "reason": student.get("stuck_reason"),
-            "concept": student.get("concept"),
-            "hint_level": student.get("hint_level", 0),
-            "stuck_since": to_iso(student.get("stuck_since")),
-        }
-        student_list.append(ship)
-
-    if len(student_list) == 0:
-        # STUB: fake class until seed_demo.py fills the database.
-        student_list = make_fake_ships()
-
-    # STUB: real numbers come in Task 5 (seamap/dashboard.py).
-    fake_stats = {
-        "avg_seconds_stuck": 95,
-        "siren_blocks": 2,
-    }
-
-    result = {
-        "class_id": class_id,
-        "students": student_list,
-        "stats": fake_stats,
-    }
     return jsonify(result)
-
-
-def make_fake_ships():
-    """STUB: 8 fake ships that show every status on the Sea Map."""
-    stuck_time = "2026-11-14T03:20:00+00:00"
-
-    fake_ships = [
-        {
-            "id": "s1", "name": "Maya", "status": "green",
-            "reason": None, "concept": None,
-            "hint_level": 0, "stuck_since": None,
-        },
-        {
-            "id": "s2", "name": "Leo", "status": "green",
-            "reason": None, "concept": None,
-            "hint_level": 0, "stuck_since": None,
-        },
-        {
-            "id": "s3", "name": "Ava", "status": "yellow",
-            "reason": "Same error 3 times",
-            "concept": "missing colon",
-            "hint_level": 1, "stuck_since": stuck_time,
-        },
-        {
-            "id": "s4", "name": "Noah", "status": "yellow",
-            "reason": "No typing for 60 seconds",
-            "concept": "indentation",
-            "hint_level": 2, "stuck_since": stuck_time,
-        },
-        {
-            "id": "s5", "name": "Zoe", "status": "red",
-            "reason": "Still stuck after 3 hints",
-            "concept": "missing colon",
-            "hint_level": 3, "stuck_since": stuck_time,
-        },
-        {
-            "id": "s6", "name": "Sam", "status": "ithaca",
-            "reason": None, "concept": None,
-            "hint_level": 0, "stuck_since": None,
-        },
-        {
-            "id": "s7", "name": "Ivy", "status": "green",
-            "reason": None, "concept": None,
-            "hint_level": 0, "stuck_since": None,
-        },
-        {
-            "id": "s8", "name": "Ben", "status": "yellow",
-            "reason": "Output is wrong 3 times",
-            "concept": "typo in print",
-            "hint_level": 1, "stuck_since": stuck_time,
-        },
-    ]
-    return fake_ships
 
 
 @app.get("/api/insight/<class_id>")
 def get_insight(class_id):
     """Send the Tiresias tip for the teacher."""
     class_doc = classes.find_one({"_id": class_id})
+    if class_doc is None:
+        return jsonify({"error": "class not found"}), 404
 
-    insight = None
-    if class_doc is not None:
-        insight = class_doc.get("latest_insight")
+    insight = class_doc.get("latest_insight")
 
     if insight is not None:
         result = {
             "tip": insight.get("tip"),
             "counts": insight.get("counts", []),
-            "updated_at": to_iso(insight.get("updated_at")),
+            "updated_at": dashboard.to_iso(insight.get("updated_at")),
         }
         return jsonify(result)
 
@@ -405,24 +263,26 @@ def get_insight(class_id):
             {"concept": "indentation", "students": 1},
             {"concept": "typo in print", "students": 1},
         ],
-        "updated_at": to_iso(datetime.now(timezone.utc)),
+        "updated_at": dashboard.to_iso(datetime.now(timezone.utc)),
     }
     return jsonify(fake_insight)
 
 
 @app.post("/api/resolve/<student_id>")
 def resolve_student(student_id):
-    """Teacher marks a student as helped."""
-    # STUB: nothing is written to MongoDB yet (Task 5).
-    return jsonify({"ok": True, "status": "green"})
+    """Teacher marks a student as helped: the ship goes back to green."""
+    result = dashboard.resolve_student(student_id)
+    if result is None:
+        return jsonify({"error": "student not found"}), 404
+
+    return jsonify(result)
 
 
 @app.post("/api/demo/reset")
 def demo_reset():
     """Reset every ship before a demo run."""
-    # STUB: nothing is reset yet. The response shape is not in the
-    # contract yet, so this only returns ok.
-    return jsonify({"ok": True})
+    result = dashboard.reset_all_ships()
+    return jsonify(result)
 
 
 if __name__ == "__main__":
