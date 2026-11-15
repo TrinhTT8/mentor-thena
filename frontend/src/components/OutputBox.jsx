@@ -1,6 +1,5 @@
 // Shows what the student's program printed, or a friendly version of the error.
-// Styling is temporary; B6 applies the pixel design system.
-export default function OutputBox({ output, error, running }) {
+export default function OutputBox({ output, error, running, stopped }) {
   let body
   if (running) {
     body = <span className="output-empty">Running your code...</span>
@@ -10,6 +9,13 @@ export default function OutputBox({ output, error, running }) {
         {output && <span>{output}{'\n\n'}</span>}
         <span className="output-lead">Oops! Python found a problem:</span>
         <span className="output-error">{error}</span>
+      </>
+    )
+  } else if (stopped) {
+    body = (
+      <>
+        {output && <span>{output}{'\n\n'}</span>}
+        <span className="output-empty">You stopped your code.</span>
       </>
     )
   } else if (output) {

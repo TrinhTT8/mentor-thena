@@ -4,6 +4,14 @@ Why things are the way they are. Newest decisions first. Each entry: the decisio
 
 ---
 
+## 2026-11-14 · Getting-started hints (13 → 15 concepts)
+- **Why:** kids who don't know how to *start* or *finish* a program were labeled "wrong output" or "other", so the teacher never saw "5 kids can't start the task", and the hints pointed at a bug that didn't exist.
+- **Two new concepts:** "getting started" (empty or almost empty code) and "next step" (the code runs but isn't finished). Tiresias counts them like any other concept.
+- **Building hint levels** (`BUILD_LEVEL_RULES` in `prompts.py`), same strictness as bug hints: 1 = a question about the task's goal; 2 = say in plain words which part of the task comes next (no keyword or symbol); 3 = a tiny example of the building block, not their task. Never the program or their next line. Gemini picks bug or building rules by choosing the concept.
+- **Optional task field `steps`:** the teacher's plan as a list of short texts. If present, Athena uses it to choose the ONE next step. Tasks without it work as before.
+- **Backup hints:** empty code (comments don't count) is labeled "getting started"; no output, or only the first part of the answer, is labeled "next step". Unquoted text such as `print(Hello, Ithaca!)` is now labeled "missing quotes" (Python's message never mentions quotes). Limitation: printing a middle value (for example `1` when the answer is `odd`) still shows as "wrong output" in backup mode.
+- **Quality check:** 3 new cases (11–13, odd/even task), run with `python -m athena.eval_hints 11 12 13`. **3/3 passed on Gemini** (one needed a retry after a 503 "high demand"), including a kid asking for the whole program in a comment.
+
 ## 2026-11-14 · Hint tuning and quality check
 - **Settings on every hint request:** `temperature 0.4` (predictable, on-rule), `max_output_tokens 200` (caps length and cost), strictest safety filters (a block counts as a failure, so a backup hint is shown). Values in `config.py`.
 - **Prompt-injection guard:** student code, error and output are wrapped in `<student_code>`, `<error>`, `<output>` tags, and the system prompt says text in those tags is data, never instructions.
@@ -67,8 +75,8 @@ The API refuses deadlines under 10 s (`400 INVALID_ARGUMENT: Minimum allowed dea
 ## 2026-11-14 · Embeddings: `gemini-embedding-2` at 768 dimensions
 Recommended sizes are 768, 1536 and 3072. 768 is the smallest recommended size: about 6 KB per Ship's Log entry instead of about 24 KB, with little quality loss for short bug descriptions. **The Atlas Vector Search index must use `numDimensions: 768` and cosine similarity.** Changing it means rebuilding the index and re-embedding saved entries.
 
-## 2026-11-14 · 13 fixed concepts
-Gemini must pick `concept` from a fixed list (enforced by the response schema), so Tiresias can count students per concept. Six syntax concepts, six logic concepts (including infinite loop and return vs print) and "other". The list lives in `athena/prompts.py`; asserts keep `CONCEPTS`, `Concept` and `FALLBACK_HINTS` in sync. A Gemini test returned "syntax" once and "Conditional statements" once before the list existed, which is why it is enforced.
+## 2026-11-14 · Fixed concept list (13, now 15)
+Gemini must pick `concept` from a fixed list (enforced by the response schema), so Tiresias can count students per concept. Six syntax concepts, six logic concepts (including infinite loop and return vs print), two building concepts (added later, see "Getting-started hints") and "other". The list lives in `athena/prompts.py`; asserts keep `CONCEPTS`, `Concept` and `FALLBACK_HINTS` in sync. A Gemini test returned "syntax" once and "Conditional statements" once before the list existed, which is why it is enforced.
 
 ## 2026-11-14 · Hint levels
 1 = a question or nudge (no line number, no symbol). 2 = point to where (the line or part of the line). 3 = a tiny example that is not their code; it **may show the symbol**. No level ever writes the student's corrected code. After level 3 the ship turns red for the teacher.
