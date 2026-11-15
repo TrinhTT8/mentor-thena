@@ -68,7 +68,10 @@ export default function HomePage() {
 
       <main className="home-main">
         <div className="greeting">
-          <h1 className="greeting-title">Ahoy, {voyage?.studentName ?? 'sailor'}!</h1>
+          {/* "Ahoy, Maya!" once the name arrives; until then (or if it never does) say so */}
+          <h1 className="greeting-title">
+            {voyage?.studentName ? `Ahoy, ${voyage.studentName}!` : 'Loading name...'}
+          </h1>
           <p className="greeting-sub">
             {voyage
               ? `${teacher} charted ${lessons.length} ${questWord} for today. Sail to every island to reach Ithaca!`
@@ -274,7 +277,7 @@ function ProfileMenu({ name, className, teacherName }) {
     }
   }, [open])
 
-  const shownName = name ?? 'Sailor'
+  const shownName = name ?? 'Loading name...'
   return (
     <div className="profile" ref={menuRef}>
       <button
