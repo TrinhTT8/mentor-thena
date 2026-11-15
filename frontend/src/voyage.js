@@ -6,7 +6,7 @@ import { getStatus, getTask } from './api.js'
 //   className:   "Room 12" | null,
 //   teacherName: "Ms. Lee" | null,
 //   streak:      3 | null,                // days in a row
-//   lessons: [ { task_id, title, instructions, skill?, example?,
+//   lessons: [ { task_id, title, instructions, skill?,
 //                status: "completed" | "current" | "locked" } ]   // in voyage order
 // }
 //
@@ -28,7 +28,6 @@ export async function loadVoyage(studentId) {
         title: task.title,
         instructions: task.instructions,
         skill: task.skill ?? null,
-        example: task.example ?? null,
         status: status.status === 'ithaca' ? 'completed' : 'current',
       },
     ],

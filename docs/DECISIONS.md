@@ -91,3 +91,6 @@ Gemini must pick `concept` from a fixed list (enforced by the response schema), 
 
 ## 2026-11-14 · Backup hints
 `athena/fallbacks.py` reads Python's error message with simple rules (no AI) to pick the concept, then uses one of 39 hand-written hints (13 concepts × 3 levels). It labeled 11/11 real buggy programs correctly. Limitation: "loop runs wrong number of times" and "condition backwards" produce no error, so in backup mode they show as "wrong output".
+
+## 2026-11-15 · Goal tab samples replace the teacher example
+The teacher's `example` code is no longer shown to students (it was extra and could be copied). Instead the Goal tab lists teacher-written sample runs, one per line, like "if age is 9 -> Big kid" and "if age is 7 -> Nothing". `GET /api/task` sends them as an optional `samples` list of `{ when, output }` (`output: ""` = prints nothing). They are written by the teacher, separate from `expected_output`, which still never leaves the server, so the Ithaca check is unchanged. One test per task, as before. Only Big kid (`t2`) has samples so far.

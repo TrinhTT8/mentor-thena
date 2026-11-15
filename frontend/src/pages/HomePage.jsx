@@ -208,12 +208,6 @@ function QuestCard({ id, lesson, index, total }) {
       <h2 id="home-quest-title" className="quest-title">{lesson.title}</h2>
       {lesson.skill && <span className="skill-chip">Skill: {lesson.skill}</span>}
       <p className="quest-description">{lesson.instructions}</p>
-      {lesson.example && (
-        <div className="quest-example">
-          <span className="tag-label">Example</span>
-          <pre>{lesson.example}</pre>
-        </div>
-      )}
       {locked ? (
         <p className="locked-note">This island is still in the mist. Finish the quests before it to sail here!</p>
       ) : (

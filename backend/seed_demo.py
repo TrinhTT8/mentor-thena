@@ -73,6 +73,12 @@ DEMO_TASKS = [
         "title": "Big kid",
         "instructions": "Make age = 10. If age is more than 8, print: Big kid",
         "example": 'pet = "cat"\nif pet == "cat":\n    print("Meow!")',
+        # Shown to the kid in the Goal tab (GET /api/task sends it).
+        # "when" = the case in words; "output" = what the program prints ("" = nothing).
+        "samples": [
+            {"when": "age is 9", "output": "Big kid"},
+            {"when": "age is 7", "output": ""},
+        ],
         "expected_output": "Big kid",
         "solution": 'age = 10\nif age > 8:\n    print("Big kid")',
         "steps": [

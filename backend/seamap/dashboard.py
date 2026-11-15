@@ -52,7 +52,7 @@ def get_task(student_id):
     # Only ask MongoDB for the fields we are allowed to send.
     task = tasks.find_one(
         {"_id": student.get("current_task_id")},
-        {"title": 1, "instructions": 1, "example": 1},
+        {"title": 1, "instructions": 1, "samples": 1},
     )
     if task is None:
         return None
@@ -65,9 +65,11 @@ def get_task(student_id):
         "student_name": student.get("name"),
     }
 
-    # The teacher's example is optional: only send it when the task has one.
-    if task.get("example"):
-        result["example"] = task["example"]
+    # The teacher's sample runs for the Goal tab are optional: only send them when the
+    # task has them. They are written by the teacher, separate from expected_output
+    # (which still never leaves the server). The old "example" field is no longer sent.
+    if task.get("samples"):
+        result["samples"] = task["samples"]
 
     return result
 
