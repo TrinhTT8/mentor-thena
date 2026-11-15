@@ -82,9 +82,18 @@ Open a second terminal (activate the venv there too):
 python seed_demo.py
 ```
 This first clears class c1's old students, snapshots, and hints, then creates:
-- class `c1`, tasks `t1`–`t3`, and students `s1`–`s8`
-- `s1` (Maya) is the live student. The simulator never touches s1
-- bots `s2`–`s8` start in a mix of green, yellow, red, and ithaca
+- class `c1`, 4 quests, and students `s1`–`s8`:
+  - `t1` Say hello to Ithaca (print; demo bug: missing quotes)
+  - `t2` Big kid (if; demo bugs: missing colon, indentation)
+  - `t3` Countdown to sail (while; demo bug: infinite loop)
+  - `t4` Odd or even crew (%; shows "getting started" hints)
+- `s1` (Maya) is the live student, on `t2` Big kid. The simulator never
+  touches s1
+- bots `s2`–`s8` are spread over all 4 quests, in a mix of green, yellow,
+  red, and ithaca
+
+Each quest has a teacher `example` (shown to the kid, a different problem)
+and server-only `expected_output`, `solution`, and `steps`.
 
 Then the bot simulator starts. Every 10 seconds it moves one random bot
 one step and prints what changed, for example `s5 Zoe: green (teacher helped)`.
@@ -106,6 +115,9 @@ Two ways to reset:
 Run these while Flask is running. In PowerShell, type `curl.exe`
 instead of `curl`.
 
+In cmd, don't put `<`, `>`, `&`, or `|` inside the JSON (for example code
+like `if age > 8`): cmd reads them as commands even inside the quotes.
+
 "Real" means the route reads MongoDB (seed first).
 "STUB" means fake data for now.
 An unknown student or class ID gives a 404, for example
@@ -124,10 +136,12 @@ Current task for a student (real)
 curl http://localhost:5000/api/task/s1
 ```
 ```json
-{"task_id": "t1", "title": "Say hello to Ithaca",
- "instructions": "Use print to show: Hello, Ithaca!"}
+{"task_id": "t2", "title": "Big kid",
+ "instructions": "Make age = 10. If age is more than 8, print: Big kid",
+ "example": "pet = \"cat\"\nif pet == \"cat\":\n    print(\"Meow!\")"}
 ```
-`expected_output` is never sent.
+`example` is optional (only sent when the quest has one).
+`expected_output`, `solution`, and `steps` are never sent.
 
 ### Snapshot (real)
 
@@ -137,7 +151,7 @@ These tests change s1, so run `python seed_demo.py` afterwards to reset it.
 
 Run with an error (the first time: no hint yet)
 ```
-curl -X POST http://localhost:5000/api/snapshot -H "Content-Type: application/json" -d "{\"student_id\":\"s1\",\"task_id\":\"t1\",\"event\":\"run\",\"code\":\"if x\",\"output\":\"\",\"error\":\"SyntaxError: expected ':'\"}"
+curl -X POST http://localhost:5000/api/snapshot -H "Content-Type: application/json" -d "{\"student_id\":\"s1\",\"task_id\":\"t2\",\"event\":\"run\",\"code\":\"if age\",\"output\":\"\",\"error\":\"SyntaxError: expected ':'\"}"
 ```
 [Mac/Linux: put the JSON in single quotes and drop the backslashes]
 ```json
@@ -157,7 +171,7 @@ After 45 s, the next run gives level 2, then level 3, then the ship turns red.
 
 Reach Ithaca: run with the right output
 ```
-curl -X POST http://localhost:5000/api/snapshot -H "Content-Type: application/json" -d "{\"student_id\":\"s1\",\"task_id\":\"t1\",\"event\":\"run\",\"code\":\"print('Hello, Ithaca!')\",\"output\":\"Hello, Ithaca!\",\"error\":\"\"}"
+curl -X POST http://localhost:5000/api/snapshot -H "Content-Type: application/json" -d "{\"student_id\":\"s1\",\"task_id\":\"t2\",\"event\":\"run\",\"code\":\"print('Big kid')\",\"output\":\"Big kid\",\"error\":\"\"}"
 ```
 [Mac/Linux: single quotes around the JSON, no backslashes.
 Use `print(1)` as the code, because the code's own single quotes would break it]
@@ -168,7 +182,7 @@ After Ithaca, every snapshot answers `"ithaca"` until you re-seed.
 
 Heartbeat, student is busy (no hint)
 ```
-curl -X POST http://localhost:5000/api/snapshot -H "Content-Type: application/json" -d "{\"student_id\":\"s1\",\"task_id\":\"t1\",\"event\":\"heartbeat\",\"code\":\"\",\"output\":\"\",\"error\":\"\",\"activity\":{\"seconds_since_last_key\":5,\"seconds_since_cursor_move\":5,\"keys_typed\":12,\"keys_deleted\":3}}"
+curl -X POST http://localhost:5000/api/snapshot -H "Content-Type: application/json" -d "{\"student_id\":\"s1\",\"task_id\":\"t2\",\"event\":\"heartbeat\",\"code\":\"\",\"output\":\"\",\"error\":\"\",\"activity\":{\"seconds_since_last_key\":5,\"seconds_since_cursor_move\":5,\"keys_typed\":12,\"keys_deleted\":3}}"
 ```
 [Mac/Linux: single quotes around the JSON, no backslashes]
 ```json
@@ -177,7 +191,7 @@ curl -X POST http://localhost:5000/api/snapshot -H "Content-Type: application/js
 
 Heartbeat, student is idle (no key AND no cursor move for 60 s or more)
 ```
-curl -X POST http://localhost:5000/api/snapshot -H "Content-Type: application/json" -d "{\"student_id\":\"s1\",\"task_id\":\"t1\",\"event\":\"heartbeat\",\"code\":\"\",\"output\":\"\",\"error\":\"\",\"activity\":{\"seconds_since_last_key\":65,\"seconds_since_cursor_move\":65,\"keys_typed\":0,\"keys_deleted\":0}}"
+curl -X POST http://localhost:5000/api/snapshot -H "Content-Type: application/json" -d "{\"student_id\":\"s1\",\"task_id\":\"t2\",\"event\":\"heartbeat\",\"code\":\"\",\"output\":\"\",\"error\":\"\",\"activity\":{\"seconds_since_last_key\":65,\"seconds_since_cursor_move\":65,\"keys_typed\":0,\"keys_deleted\":0}}"
 ```
 [Mac/Linux: single quotes around the JSON, no backslashes]
 ```json

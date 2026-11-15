@@ -41,7 +41,10 @@ def to_iso(value):
 
 
 def get_task(student_id):
-    """Return the student's current task. Never includes expected_output."""
+    """Return the student's current task.
+
+    Never includes expected_output, solution, or steps (server only).
+    """
     student = students.find_one({"_id": student_id})
     if student is None:
         return None
@@ -49,7 +52,7 @@ def get_task(student_id):
     # Only ask MongoDB for the fields we are allowed to send.
     task = tasks.find_one(
         {"_id": student.get("current_task_id")},
-        {"title": 1, "instructions": 1},
+        {"title": 1, "instructions": 1, "example": 1},
     )
     if task is None:
         return None
@@ -59,6 +62,11 @@ def get_task(student_id):
         "title": task.get("title"),
         "instructions": task.get("instructions"),
     }
+
+    # The teacher's example is optional: only send it when the task has one.
+    if task.get("example"):
+        result["example"] = task["example"]
+
     return result
 
 
