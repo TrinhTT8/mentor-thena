@@ -20,6 +20,34 @@ RULES = config.STUCK_RULES
 CHURN_HEARTBEATS = RULES["churn_window_seconds"] // config.HEARTBEAT_SECONDS
 
 
+def cue_reasons():
+    """Return the short stuck reason the teacher sees for each cue.
+
+    The numbers come from config.STUCK_RULES, so the text always
+    matches the real rules.
+    """
+    idle_text = f"No typing for {RULES['idle_seconds']} seconds"
+
+    error_runs = RULES["same_error_runs"]
+    if error_runs == 1:
+        same_error_text = "Got an error on Run"
+    else:
+        same_error_text = f"Same error {error_runs} runs in a row"
+
+    wrong_runs = RULES["wrong_output_runs"]
+    if wrong_runs == 1:
+        wrong_output_text = "Output is not right yet"
+    else:
+        wrong_output_text = f"Output is wrong {wrong_runs} runs in a row"
+
+    return {
+        "idle": idle_text,
+        "churn": "Typing and deleting a lot",
+        "same_error": same_error_text,
+        "wrong_output": wrong_output_text,
+    }
+
+
 def clean_output(text):
     """Make output easy to compare.
 
