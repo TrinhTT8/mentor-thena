@@ -1,0 +1,97 @@
+NEXT BACKEND TASKS FOR PERSON A
+(Person B is now on the UI only, so these Person B backend parts move to you.)
+
+1. URGENT: the backend does not start after the last merge
+   tiresias/insights.py checks MINI_LESSONS against CONCEPTS, and the concept list
+   is now 15, not 13 ("getting started" and "next step" were added for kids who
+   don't know how to start or what to add next). Add these two entries:
+
+       "getting started":
+           "Read the task out loud together and ask the class: what is the very "
+           "first small step?",
+       "next step":
+           "Show a half-finished program and ask the class what piece is still missing.",
+
+   Check: python -c "import app"  should print nothing (no error).
+
+
+2. Siren Guard (was B9): stop hints that give away the answer
+   New file athena/siren_guard.py, called from get_hint() in athena/hint_giver.py
+   after Gemini writes a hint (you may edit hint_giver.py for this).
+   - Free check, EVERY level (no Gemini): block the hint if it contains
+       * the task's expected_output (if it is longer than a few characters),
+       * a full line of a correct solution (if the task has one), or
+       * one of the student's own lines rewritten as the fix.
+     Compare with spaces squashed so small spacing changes don't hide a leak.
+   - Gemini check, ONLY at levels 1 and 2 (budget rule B in docs/DECISIONS.md):
+     ask "does this hint give away the answer or the missing symbol?" (yes/no JSON).
+     Level 3 may show the symbol on purpose, so skip the Gemini check there.
+   - If blocked: ask Gemini to rewrite once (config.MAX_SIREN_REWRITES = 1).
+     Still blocked or Gemini fails: use the backup hint (athena/fallbacks.py).
+   - Set "siren_blocked": True on that hint. The Sea Map stat "siren_blocks"
+     already counts them (seamap/dashboard.py).
+   - Never raise. USE_GEMINI=0 means no Gemini check at all.
+   - Test with 2-3 cases only (Gemini budget). Add a line to docs/DECISIONS.md.
+
+
+3. Demo tasks in seed_demo.py
+   Give the demo class 3-4 real quests, for example:
+     - Say hello:      print Hello, Ithaca!
+     - Big kid:        if age > 8 print "Big kid" (the colon / indentation bugs)
+     - Countdown:      while loop 3, 2, 1 (the infinite loop bug)
+     - Odd or even:    n % 2 (shows the new "getting started" hints)
+   Each task: title, instructions, expected_output (server only), and the
+   optional fields:
+     - "steps": the teacher's plan as a short list (server only; Athena uses it
+       to pick the next small step). Example for odd/even:
+       ["find the leftover after dividing by 2", "use if and else", "print the word"]
+     - "example": a teacher-written example, NOT the expected output
+       (see 4).
+
+
+4. CONTRACT CHANGE to agree on: "example" in GET /api/task
+   GET /api/task/<student_id> -> { "task_id", "title", "instructions", "example"? }
+   - "example" is optional text. The Student page's quest box already shows it
+     when present and hides it when missing, so nothing breaks either way.
+   - It must NEVER be expected_output, and "steps" must never be sent either.
+     Add "example" to the projection in seamap/dashboard.py get_task().
+
+
+5. Seed the Ship's Log (was part of B10)
+   About 15 entries for common bugs (missing colon, indentation, NameError,
+   missing quotes, unclosed bracket, text + number, infinite loop...), so the
+   demo shows "from_ships_log" hints without waiting for real students.
+   Uses about 15 embedding requests (embedding limit is 1,000/day, fine).
+   Run python create_indexes.py first so the vector index exists.
+
+
+6. (Optional) Next quest
+   The Ithaca celebration has no "Next quest" button yet because there is no
+   route for it. If we want it: POST /api/next/<student_id> -> { "task_id",
+   "title", "instructions", "example"? }, moving current_task_id to the next
+   task and resetting the ship to green. This is a NEW route, so we agree on
+   it first.
+
+
+7. Small things from the code check
+   - A changed error resets a yellow ship to green and hint_level to 0. A kid
+     who swaps between two mistakes never gets past hint level 1. OK or change?
+   - Holding Backspace on 20 characters counts as "churn". Maybe require some
+     typed keys too.
+   - Hints now store "error" and "code_summary" forever (snapshots auto-delete
+     after 7 days, hints don't). Consider the same 7-day TTL on hints for
+     privacy. Ship's Log entries have no student id, so they can stay.
+
+
+8. Demo-day checklist (backend side)
+   - USE_GEMINI=1 for the demo, 0 while testing (free limit: 500 requests/day,
+     resets at midnight Pacific).
+   - POST /api/demo/reset before each run.
+   - Test the bot simulator in seed_demo.py with the Sea Map so the teacher
+     view has moving ships.
+   - Record a backup demo video in case Gemini is slow (we saw 503s).
+
+
+The teacher page (Sea Map) will use, exactly as in the contract:
+   GET /api/seamap/<class_id>, GET /api/insight/<class_id>, POST /api/resolve/<id>
+Please don't change their shapes without telling Person B.

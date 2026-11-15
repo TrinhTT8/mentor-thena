@@ -1,61 +1,44 @@
-// The quest box, styled like a game quest log: a parchment card in a wooden frame with
-// a tab on top, a progress bar, and one quest row (scroll, details, status).
+// The quest banner across the top: scroll icon, title, instructions, a progress badge,
+// and (on the right) the teacher's example when the task has one.
 //
 // task comes from GET /api/task: { task_id, title, instructions } plus one OPTIONAL field
-// that the server does not send yet:
-//   example: a teacher-written example (never the expected output!)
+// the server does not send yet:
+//   example: a teacher-written example. NEVER the expected output (that stays on the server).
 
-// progress: 'not-started' | 'in-progress' | 'completed'
-const PROGRESS = {
-  'not-started': { label: 'Not started', percent: 0 },
-  'in-progress': { label: 'In progress', percent: 50 },
-  completed: { label: 'Completed', percent: 100 },
+const PROGRESS_LABELS = {
+  'not-started': 'Not started',
+  'in-progress': 'In progress',
+  completed: '✓ Completed',
+}
+
+// Words in `backticks` show as little code chips, like `print`.
+function withCodeChips(text) {
+  return text.split(/(`[^`]+`)/).map((part, i) =>
+    part.startsWith('`') && part.endsWith('`')
+      ? <code key={i} className="code-chip">{part.slice(1, -1)}</code>
+      : part,
+  )
 }
 
 export default function QuestBox({ task, progress }) {
-  const step = PROGRESS[progress]
-
   return (
-    <section className="quest-box" aria-labelledby="task-title">
-      <div className="quest-tabs">
-        <span className="quest-tab">Quest</span>
-      </div>
+    <section className="quest-banner" aria-labelledby="task-title">
+      <img src="/pixel/quest-scroll.svg" alt="" width="56" height="56" className="quest-icon pixel-art" />
 
-      <div className="quest-frame">
-        <div className="quest-progress">
-          <div
-            className="quest-bar"
-            role="progressbar"
-            aria-label="Quest progress"
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-valuenow={step.percent}
-            aria-valuetext={step.label}
-          >
-            <div className="quest-bar-fill" style={{ width: `${step.percent}%` }} />
-          </div>
-          <span className="quest-progress-label">{step.label}</span>
+      <div className="quest-body">
+        <div className="quest-heading">
+          <h1 id="task-title" className="quest-title">{task ? task.title : 'Loading your quest...'}</h1>
+          <span className={`quest-status is-${progress}`}>{PROGRESS_LABELS[progress]}</span>
         </div>
-
-        <article className={`quest-item is-${progress}`}>
-          <img src="/pixel/quest-scroll.svg" alt="" width="64" height="64" className="quest-icon pixel-art" />
-
-          <div className="quest-body">
-            <h1 id="task-title" className="quest-title">{task ? task.title : 'Loading your quest...'}</h1>
-            {task && <p className="quest-description">{task.instructions}</p>}
-            {task?.example && (
-              <div className="quest-example">
-                <span className="quest-example-label">Example</span>
-                <pre>{task.example}</pre>
-              </div>
-            )}
-          </div>
-
-          <span className={`quest-status is-${progress}`}>
-            {progress === 'completed' ? '✓ Completed' : step.label}
-          </span>
-        </article>
+        {task && <p className="quest-description">{withCodeChips(task.instructions)}</p>}
       </div>
+
+      {task?.example && (
+        <div className="quest-example">
+          <span className="tag-label">Example</span>
+          <pre>{task.example}</pre>
+        </div>
+      )}
     </section>
   )
 }

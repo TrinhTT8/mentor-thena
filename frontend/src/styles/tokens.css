@@ -39,6 +39,7 @@
   --wood-light: #b07a45;
   --editor-bar: #ebe4d0;    /* night theme: a cream editor, so light bars */
   --editor-line: #d6ccb0;
+  --editor-error-line: #f7d9d4;
 
   /* Code editor and output box: the opposite of the page (cream on a dark page) */
   --editor-bg: #f6f1e3;
@@ -65,7 +66,7 @@
   --heading: #1e2a5a;       /* gold is too faint on cream, so titles are navy */
   --focus-ring: #0e6e6c;    /* a darker teal that shows on cream */
   --frame: #6a7bc4;         /* soft periwinkle card frames (the night border color) */
-  --shadow-color: #e2d6b8;  /* a darker parchment: a soft shadow, not a black one */
+  --shadow-color: #1e2a5a;  /* hard navy block shadows, like the mockup */
   --page-pattern: #f1e6c9;
 
   /* Odyssey sky: misty blue-grey at the top fading into parchment, pixel mist clouds,
@@ -82,10 +83,11 @@
   --wood-light: #b07a45;    /* the inner edge of the frame */
 
   /* Code editor bars (toolbar, output tab row) and dividers, like LeetCode */
-  --editor-bar: #1d2030;
-  --editor-line: #2e3347;
+  --editor-bar: #1b2033;
+  --editor-line: #2c3350;
+  --editor-error-line: #3a2333; /* the red-tinted line where Python found a problem */
 
-  --editor-bg: #14161f;     /* near-black editor */
+  --editor-bg: #151a28;     /* dark navy-black editor */
   --editor-ink: #f6f1e3;    /* cream code text */
   --editor-dim: #b9b3a0;
   --editor-error: #ff8a8a;  /* light red reads well on black */
@@ -101,20 +103,22 @@
   --space-6: 48px;
 
   --radius-none: 0px;
-  --radius-panel: 16px;     /* soft corners on cards */
-  --radius-control: 12px;   /* buttons, the editor, the output box, the hint bubble */
-  --radius-chip: 4px;       /* small pieces: hint pips, badges */
+  /* Square pixel corners (the mockup). For rounded corners try 16px / 12px / 4px. */
+  --radius-panel: 0px;      /* cards */
+  --radius-control: 0px;    /* buttons, the editor, the hint card */
+  --radius-chip: 0px;       /* small pieces: hint pips, badges */
   --border-pixel: 4px;
   --border-soft: 3px;       /* the gentle frame around cards */
   --border-thin: 2px;
 
   /* Type */
-  --font-pixel: "Press Start 2P", ui-monospace, monospace;
+  --font-pixel: "Jersey 15", ui-monospace, monospace;
   --font-reading: Nunito, "Trebuchet MS", system-ui, sans-serif;
   --font-code: "JetBrains Mono", ui-monospace, Consolas, monospace;
-  --text-display: 400 32px/40px var(--font-pixel); /* logo, Ithaca title */
-  --text-title: 400 16px/24px var(--font-pixel);   /* panel and page titles */
-  --text-label: 400 12px/16px var(--font-pixel);   /* button labels, ship names */
+  --text-display: 400 48px/52px var(--font-pixel); /* logo, Ithaca title */
+  --text-title: 400 28px/32px var(--font-pixel);   /* panel and page titles */
+  --text-label: 400 22px/24px var(--font-pixel);   /* button labels, ship names */
+  --text-tag: 400 18px/20px var(--font-pixel);     /* small caps tags: EXAMPLE, EARLIER HINT, tabs */
   --text-hint: 800 22px/32px var(--font-reading);  /* Athena's hints */
   --text-body-lg: 700 18px/28px var(--font-reading); /* task instructions */
   --text-body: 600 16px/24px var(--font-reading);
