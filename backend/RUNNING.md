@@ -129,7 +129,6 @@ In cmd, don't put `<`, `>`, `&`, or `|` inside the JSON (for example code
 like `if age > 8`): cmd reads them as commands even inside the quotes.
 
 "Real" means the route reads MongoDB (seed first).
-"STUB" means fake data for now.
 An unknown student or class ID gives a 404, for example
 `{"error": "student not found"}`.
 
@@ -159,25 +158,22 @@ Every Run is saved in `snapshots`. Heartbeats are not saved.
 Argus checks each snapshot, and Athena makes a hint when Argus finds a cue.
 These tests change s1, so run `python seed_demo.py` afterwards to reset it.
 
-Run with an error (the first time: no hint yet)
+Run with an error: the first run already gets a level 1 hint
+(this text is a backup hint, `USE_GEMINI=0`)
 ```
 curl -X POST http://localhost:5000/api/snapshot -H "Content-Type: application/json" -d "{\"student_id\":\"s1\",\"task_id\":\"t2\",\"event\":\"run\",\"code\":\"if age\",\"output\":\"\",\"error\":\"SyntaxError: expected ':'\"}"
 ```
 [Mac/Linux: put the JSON in single quotes and drop the backslashes]
-```json
-{"status": "green", "hint": null}
-```
-
-Trigger a hint: run the same command 3 times in a row.
-The 3rd run gets a level 1 hint (this text is a backup hint, `USE_GEMINI=0`):
 ```json
 {"status": "yellow",
  "hint": {"level": 1,
           "text": "Python lines that start with if, for or while need something special at the end. Can you spot it?",
           "from_ships_log": false}}
 ```
-Running it again within 45 s gives no new hint (cooldown).
-After 45 s, the next run gives level 2, then level 3, then the ship turns red.
+Running it again within 20 s gives no new hint (cooldown).
+After 20 s, the next run gives level 2, then level 3, then the ship turns red.
+A run with no error but the wrong output also gets a hint on the first run.
+(The numbers live in `config.STUCK_RULES`.)
 
 Reach Ithaca: run with the right output
 ```
@@ -199,9 +195,9 @@ curl -X POST http://localhost:5000/api/snapshot -H "Content-Type: application/js
 {"status": "green", "hint": null}
 ```
 
-Heartbeat, student is idle (no key AND no cursor move for 60 s or more)
+Heartbeat, student is idle (no key AND no cursor move for 12 s or more)
 ```
-curl -X POST http://localhost:5000/api/snapshot -H "Content-Type: application/json" -d "{\"student_id\":\"s1\",\"task_id\":\"t2\",\"event\":\"heartbeat\",\"code\":\"\",\"output\":\"\",\"error\":\"\",\"activity\":{\"seconds_since_last_key\":65,\"seconds_since_cursor_move\":65,\"keys_typed\":0,\"keys_deleted\":0}}"
+curl -X POST http://localhost:5000/api/snapshot -H "Content-Type: application/json" -d "{\"student_id\":\"s1\",\"task_id\":\"t2\",\"event\":\"heartbeat\",\"code\":\"\",\"output\":\"\",\"error\":\"\",\"activity\":{\"seconds_since_last_key\":15,\"seconds_since_cursor_move\":15,\"keys_typed\":0,\"keys_deleted\":0}}"
 ```
 [Mac/Linux: single quotes around the JSON, no backslashes]
 ```json
@@ -252,7 +248,7 @@ curl http://localhost:5000/api/seamap/c1
    {"id": "s1", "name": "Maya", "status": "green", "reason": null,
     "concept": null, "hint_level": 0, "stuck_since": null},
    {"id": "s4", "name": "Noah", "status": "yellow",
-    "reason": "No typing for 60 seconds", "concept": "indentation",
+    "reason": "No typing for 12 seconds", "concept": "indentation",
     "hint_level": 2, "stuck_since": "2026-11-14T23:33:12.990000+00:00"}
  ],
  "stats": {"avg_seconds_stuck": 113, "siren_blocks": 0}}
